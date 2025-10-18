@@ -433,7 +433,7 @@ Um dos destaques do prédio é a porta principal, talhada em madeira de cinamomo
         position: Cesium.Cartesian3.fromDegrees(-54.316974, -30.340808, 140),// 144.08
         orientation: new Cesium.HeadingPitchRoll(Cesium.Math.toRadians(-156), Cesium.Math.toRadians(0), Cesium.Math.toRadians(0)),
         uri_base: 'poco_low.glb',
-        uri_detail: 'poco.glb',
+        uri_detail: 'poco_centro.glb',
         info: {
             title: 'POÇO ANTIGO',
             description: 'No entorno urbano da Praça Fernando Abbott, além dos prédios históricos e seus detalhes arquitetônicos, destacam-se casas e lojas privadas que, mesmo sem registros detalhados, contribuem para a identidade e a vivacidade do centro da cidade.',
