@@ -73,43 +73,12 @@
         {
             display: none !important;
         }
-        /* Painéis escuros padronizados e zebra rows */
-        .dark-panel {
-            /* painel 'Todos' mais escuro (preto mais intenso) */
-            background: #050505;
-            color: #fff;
-            border-radius: 8px;
-            padding: 8px;
-            box-shadow: 0 4px 18px rgba(0,0,0,0.6);
-        }
-        /* Left controls: botão com texto branco e linhas zebra */
-        #left-controls {
-            background: transparent; /* mantemos container transparente; os botões recebem zebra */
-            padding: 4px;
-            border-radius: 8px;
-        }
-        #left-controls button {
-            color: #fff !important;
-            /* Fundo escuro consistente, um tom menos preto que o painel 'Todos' */
-            background: #141414 !important;
-            border: 1px solid rgba(255,255,255,0.06) !important;
-            text-align: left;
-            width: 220px;
-            padding: 8px 10px;
-        }
-        /* Zebra sutil: alterna dois tons escuros para criar relevo sem competir com o painel 'Todos' */
-        #left-controls button:nth-child(odd) { background: #1a1a1a !important; }
-        #left-controls button:nth-child(even) { background: #0f0f0f !important; }
-        /* Welcome box zebra rows */
-        #welcome-box .zebra-row { padding: 10px; border-radius: 6px; margin-bottom: 8px; }
-        #welcome-box .zebra-row:nth-child(odd) { background: rgba(255,255,255,0.03); }
-        #welcome-box .zebra-row:nth-child(even) { background: rgba(255,255,255,0.01); }
-        #welcome-box a { color: #9fd; }
     </style>
 </head>
 
 <body>
     <div id="cesiumContainer"></div>
+    
     <!-- Painel lateral agrupando os botões de controle -->
     <div id="left-panel" style="position:fixed;top:45px;left:5px;z-index:2;display:flex;flex-direction:column;gap:8px;">
         <!-- Botão 'Todos' controla a visibilidade dos controles abaixo -->
@@ -119,15 +88,15 @@
             <button id="mapa-tratados-btn" style="background:#ffe;border:1px solid #888;padding:6px 10px;border-radius:6px;">Mapa SG_tratados</button>
             <button id="mapa-1930-btn" style="background:#ffe;border:1px solid #888;padding:6px 10px;border-radius:6px;">Mapa SG_1930</button>
             <!-- Tourism buttons (simplified) -->
-            <button id="tourism-toggle-btn" style="background:#def;border:1px solid #888;padding:6px 10px;border-radius:6px;">marcadores Turismo (8)</button>
-            <button id="lendas-toggle-btn" style="background:#fdd;border:1px solid #888;padding:6px 10px;border-radius:6px;">marcadores Lendas (5)</button>
+            <button id="tourism-list-btn" style="background:#ffe;border:1px solid #888;padding:6px 10px;border-radius:6px;">Lista Turismo</button>
+            <button id="tourism-toggle-btn" style="background:#ffe;border:1px solid #888;padding:6px 10px;border-radius:6px;">marcadores Turismo (8)</button>
             <!-- Botões fixos adicionais -->
-            <button id="marechais-btn" style="background:#efe;border:1px solid #888;padding:6px 10px;border-radius:6px;">Marechais</button>
-            <button id="ilustres-btn" style="background:#efe;border:1px solid #888;padding:6px 10px;border-radius:6px;">Homens Ilustres</button>
+            <button id="marechais-btn" style="background:#ffe;border:1px solid #888;padding:6px 10px;border-radius:6px;">Marechais</button>
+            <button id="ilustres-btn" style="background:#ffe;border:1px solid #888;padding:6px 10px;border-radius:6px;">Homens Ilustres</button>
         </div>
     </div>
         <!-- Botão fixo de boas-vindas -->
-        <button id="welcome-btn" style="position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:100;background:#2266aa;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">Bem Vindo</button>
+        <button id="welcome-btn" style="position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:100;background:#333;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">Bem Vindo</button>
     <!--<select id="category-selector" style="z-index: 1; position: fixed; top: 5px; left: 5px;">
 
     </select>-->
@@ -265,34 +234,11 @@
                             todosBtn.innerText = 'Todos ▾';
                         }
                     };
-                    // Aplica aparência escura e zebra ao painel e ao botão 'Todos'
-                    try {
-                        leftControls.classList.add('dark-panel');
-                        todosBtn.classList.add('dark-panel');
-                        // força cor do botão Todos (em caso de inline styles)
-                        todosBtn.style.background = '#111';
-                        todosBtn.style.color = '#fff';
-                        todosBtn.style.border = '1px solid rgba(255,255,255,0.06)';
-
-                        // JS fallback: aplica zebra sutil aos botões visíveis no painel esquerdo
-                        try {
-                            const buttons = Array.from(leftControls.querySelectorAll('button'));
-                            let idxVisible = 0;
-                            buttons.forEach(b => {
-                                // pula botões que estão escondidos (display:none)
-                                const disp = window.getComputedStyle(b).display;
-                                if (disp === 'none') return;
-                                const bg = (idxVisible % 2 === 0) ? '#1a1a1a' : '#0f0f0f';
-                                b.style.setProperty('background', bg, 'important');
-                                b.style.setProperty('color', '#fff', 'important');
-                                b.style.setProperty('border', '1px solid rgba(255,255,255,0.06)', 'important');
-                                idxVisible++;
-                            });
-                        } catch (errInner) { console.warn('Erro aplicando zebra via JS', errInner); }
-                    } catch(e) { console.warn('Não foi possível aplicar dark-panel ao painel esquerdo', e); }
                 }
                 // Tourism UI (simplified)
-                // Lista turística removida: usamos apenas os marcadores no mapa para abrir infoboxes
+                document.getElementById('tourism-list-btn').onclick = () => {
+                    showTourismListModal();
+                };
 
                 // Função que cria a caixa de boas-vindas centralizada com conteúdo da prefeitura
                 function showWelcomeBox() {
@@ -300,7 +246,6 @@
                     if (existing) return; // já visível
                     const box = document.createElement('div');
                     box.id = 'welcome-box';
-                    box.className = 'dark-panel';
                     box.style.position = 'fixed';
                     box.style.left = '50%';
                     box.style.top = '50%';
@@ -310,25 +255,29 @@
                     box.style.maxWidth = '95vw';
                     box.style.maxHeight = '70vh';
                     box.style.overflowY = 'auto';
-                    box.style.padding = '12px';
+                    box.style.background = '#333';
+                    box.style.color = '#f5f5f5';
+                    box.style.padding = '16px';
                     box.style.borderRadius = '10px';
+                    box.style.boxShadow = '0 4px 30px rgba(0,0,0,0.4)';
                     box.style.fontFamily = 'sans-serif';
-                    // Conteúdo com linhas zebra
                     box.innerHTML = `
                         <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;'>
-                            <div style='font-size:18px;font-weight:700;color:#aaf;'>Bem-vindo a São Gabriel</div>
+                            <div style='font-size:18px;font-weight:700;color:#f5f5f5;'>Bem-vindo a São Gabriel</div>
                             <div style='display:flex;gap:8px;align-items:center;'>
                                 <a href='https://www.saogabriel.rs.gov.br/pagina/historia' target='_blank' style='font-size:12px;color:#9fd;text-decoration:underline;'>Fonte: Prefeitura</a>
-                                <button id='welcome-close' style='background:#333;color:#fff;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;'>Fechar</button>
+                                <button id='welcome-close' style='background:transparent;color:#f5f5f5;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;'>Fechar</button>
                             </div>
                         </div>
-                        <div class='zebra-row'>
-                            <b>1) Origem do nome da cidade</b>
-                            <p style='margin-top:6px;color:#ddd;'>Quando se pronuncia o nome “São Gabriel” naturalmente atenta-se somente sobre o nome do município. O nome é uma homenagem ao Vice-Rei do Rio da Prata em 1800, Dom Gabriel. A primeira povoação foi fundada no Cerro do Batovi por Félix de Azara, e em 4 de abril de 1846 foi elevada a vila — data considerada a de emancipação.</p>
-                        </div>
-                        <div class='zebra-row'>
-                            <b>2) Conheça melhor São Gabriel</b>
-                            <p style='margin-top:6px;color:#ddd;'>A região combina paisagens de coxilhas e várzeas, com forte vocação pecuária e arrozicultura, e possui atrativos naturais como o conjunto de formações rochosas na Palma e pontos hidrográficos singulares no distrito do Batovi. A cidade tem tradição militar — 'Terra dos Marechais' — e forte relevância histórica e cultural.</p>
+                        <div style='font-size:14px;color:#f5f5f5;line-height:1.4;'>
+                            <div style='margin-bottom:12px;'>
+                                <b>1) Origem do nome da cidade</b>
+                                <p style='margin-top:6px;'>Quando se pronuncia o nome “São Gabriel” naturalmente atenta-se somente sobre o nome do município. O nome é uma homenagem ao Vice-Rei do Rio da Prata em 1800, Dom Gabriel. A primeira povoação foi fundada no Cerro do Batovi por Félix de Azara, e em 4 de abril de 1846 foi elevada a vila — data considerada a de emancipação.</p>
+                            </div>
+                            <div>
+                                <b>2) Conheça melhor São Gabriel</b>
+                                <p style='margin-top:6px;'>A região combina paisagens de coxilhas e várzeas, com forte vocação pecuária e arrozicultura, e possui atrativos naturais como o conjunto de formações rochosas na Palma e pontos hidrográficos singulares no distrito do Batovi. A cidade tem tradição militar — 'Terra dos Marechais' — e forte relevância histórica e cultural.</p>
+                            </div>
                         </div>
                     `;
                     document.body.appendChild(box);
@@ -363,7 +312,7 @@
                                     border-radius: 8px !important;
                                 }
 
-                                /* Ajuste geral dos infoboxes para layout em coluna e conteúdo rolável */
+                                
                                 /* Ajuste geral dos infoboxes para layout em coluna e conteúdo rolável */
                                 #infobox, #prefeitos-box, #marechais-box, #ilustres-box, #infobox-lenda, #tourism-infobox, #tourism-list-modal {
                                     left: 50% !important;
@@ -421,119 +370,6 @@
                         document.head.appendChild(st);
                     })();
 
-                        // Detecta iPhone/iOS (inclui iPhone 15) e aplica estilos adicionais para melhorar leitura
-                        (function applyIphoneStyles() {
-                            const ua = navigator.userAgent || navigator.vendor || window.opera;
-                            const isIphone = /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/i.test(ua) && 'ontouchend' in document);
-                            if (!isIphone) return;
-                            // Marca body para possíveis seletores CSS adicionais
-                            document.body.classList.add('is-iphone');
-                            const cssIphone = `
-                                /* Aumenta botões no painel esquerdo para toque confortável em iPhones */
-                                .is-iphone #left-panel button, .is-iphone #left-panel button {
-                                    padding: 10px 14px !important;
-                                    font-size: 16px !important;
-                                    border-radius: 8px !important;
-                                }
-                                .is-iphone #todos-btn {
-                                    font-size: 17px !important;
-                                    padding: 10px 16px !important;
-                                }
-                                /* Infoboxes maiores (ocupam mais largura/altura em iPhones) */
-                                .is-iphone #infobox,
-                                .is-iphone #prefeitos-box,
-                                .is-iphone #marechais-box,
-                                .is-iphone #ilustres-box,
-                                .is-iphone #infobox-lenda,
-                                .is-iphone #tourism-infobox,
-                                .is-iphone #tourism-list-modal {
-                                    width: 96vw !important;
-                                    left: 50% !important;
-                                    right: auto !important;
-                                    transform: translateX(-50%) !important;
-                                    top: 3% !important;
-                                    height: 88vh !important;
-                                    max-height: 88vh !important;
-                                    padding: 14px !important;
-                                    display: flex !important;
-                                    flex-direction: column !important;
-                                }
-                                .is-iphone .img-building, .is-iphone .img-prefeito, .is-iphone .img-lenda {
-                                    max-height: calc(40vh) !important;
-                                }
-                                /* Aumenta área clicável do botão close para facilitar touch */
-                                .is-iphone button { touch-action: manipulation; }
-                            `;
-                            const st2 = document.createElement('style');
-                            st2.id = 'iphone-styles';
-                            st2.appendChild(document.createTextNode(cssIphone));
-                            document.head.appendChild(st2);
-                            console.log('iPhone detected: applied iphone-specific styles');
-                        })();
-
-                        // CSS global para modais/infoboxes: fundo escuro sólido (menos preto que o painel "Todos")
-                        (function injectModalSolidStyles() {
-                            const id = 'modal-solid-styles';
-                            if (document.getElementById(id)) return;
-                            const css = `
-                                /* Fundo sólido para os modais listados - tom um pouco menos preto que o painel Todos */
-                                #tourism-list-modal, #marechais-box, #prefeitos-box, #ilustres-box, #infobox, #infobox-lenda, #tourism-infobox {
-                                    background: #141414 !important;
-                                    color: #eee !important;
-                                    border: 1px solid rgba(255,255,255,0.06) !important;
-                                    box-shadow: 0 6px 30px rgba(0,0,0,0.7) !important;
-                                    padding: 12px !important;
-                                    border-radius: 10px !important;
-                                }
-                                /* Garante legibilidade: texto claro em descendentes, mas preserva imagens/vetores/canvas */
-                                /* Aplica cor do texto e bordas em descendentes, sem mexer no background dos elementos internos */
-                                #tourism-list-modal, #marechais-box, #prefeitos-box, #ilustres-box, #infobox, #infobox-lenda, #tourism-infobox,
-                                #tourism-list-modal *:not(img):not(svg):not(canvas):not(button):not(a):not(input):not(textarea) {
-                                    color: #eee !important;
-                                    border-color: rgba(255,255,255,0.04) !important;
-                                }
-                                /* Não alterar imagens/gráficos dentro dos modais */
-                                #tourism-list-modal img, #marechais-box img, #prefeitos-box img, #ilustres-box img, #infobox img, #infobox-lenda img, #tourism-infobox img {
-                                    background: transparent !important;
-                                }
-                            `;
-                            const st = document.createElement('style');
-                            st.id = id;
-                            st.appendChild(document.createTextNode(css));
-                            document.head.appendChild(st);
-                        })();
-                            // CSS global para modais/infoboxes: fundo transparente e texto escuro (solicitado pelo usuário)
-                            (function injectModalTransparentStyles() {
-                                const id = 'modal-transparent-styles';
-                                if (document.getElementById(id)) return;
-                                const css = `
-                                    /* Tornar modais visualmente transparentes e usar texto escuro */
-                                    #tourism-list-modal, #marechais-box, #prefeitos-box, #ilustres-box, #infobox, #infobox-lenda, #tourism-infobox {
-                                        background: transparent !important;
-                                        color: #111 !important; /* texto escuro */
-                                        border: 1px solid rgba(0,0,0,0.08) !important;
-                                        box-shadow: none !important;
-                                        padding: 12px !important;
-                                        border-radius: 6px !important;
-                                    }
-                                    /* Forçar texto escuro em descendentes, sem alterar imagens/vetores/canvas */
-                                    #tourism-list-modal, #marechais-box, #prefeitos-box, #ilustres-box, #infobox, #infobox-lenda, #tourism-infobox,
-                                    #tourism-list-modal *:not(img):not(svg):not(canvas):not(button):not(a):not(input):not(textarea) {
-                                        color: #111 !important;
-                                        background: transparent !important;
-                                        border-color: rgba(0,0,0,0.06) !important;
-                                    }
-                                    /* Não tocar nas imagens/gráficos dentro dos modais */
-                                    #tourism-list-modal img, #marechais-box img, #prefeitos-box img, #ilustres-box img, #infobox img, #infobox-lenda img, #tourism-infobox img {
-                                        background: transparent !important;
-                                    }
-                                `;
-                                const st = document.createElement('style');
-                                st.id = id;
-                                st.appendChild(document.createTextNode(css));
-                                document.head.appendChild(st);
-                            })();
-
                     // Handler do botão fixo 'Bem Vindo'
                 const wb = document.getElementById('welcome-btn');
                 if (wb) wb.onclick = () => { showWelcomeBox(); };
@@ -554,15 +390,11 @@
                     if (!viewer) return;
                     removeTourismMarkers();
                     tourismPoints.forEach(p => {
-                        // DEBUG: loga valores para depuração (remover depois)
-                        try { console.log('[TOURISM MARKER]', p.id, 'icon=', p.icon, 'images=', p.images); } catch(e) { console.log('log err', e); }
                         // billboard principal (maior)
                         const ent = viewer.entities.add({
                             id: p.id,
                             position: Cesium.Cartesian3.fromDegrees(p.lon, p.lat, 5),
                             billboard: {
-                                // Always use the configured icon for the marker (Flaticon);
-                                // p.images are kept for the infobox/carousel only.
                                 image: p.icon || 'https://cdn-icons-png.flaticon.com/512/149/149060.png',
                                 verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
                                 heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
@@ -600,8 +432,8 @@
                     modal.style.position = 'fixed';
                     modal.style.top = '80px';
                     modal.style.right = '20px';
-                    modal.style.background = 'transparent';
-                    modal.style.color = '#111';
+                    modal.style.setProperty('background', '#666', 'important');
+                    modal.style.setProperty('color', '#fff', 'important');
                     modal.style.padding = '12px';
                     modal.style.zIndex = 60;
                     modal.style.border = '1px solid #666';
@@ -686,7 +518,8 @@
                     box.style.position = 'fixed';
                     box.style.top = '10px';
                         box.style.right = '20px';
-                    box.style.background = 'transparent';
+                    box.style.setProperty('background', '#333', 'important');
+                    box.style.setProperty('color', '#fff', 'important');
                     box.style.border = '1.5px solid #aaa';
                     box.style.padding = '14px';
                     box.style.zIndex = 30;
@@ -716,8 +549,8 @@
                             zebra += `<div style='margin-top:6px;'><b>Obs.:</b></div>`;
                             zebra += `<div style='background:#292929;color:#fff;padding:2px 6px;border-radius:3px;'>${m.observacao}</div>`;
                         }
-                box.innerHTML = `
-                    <div style='text-align:center;color:#111;'>
+                        box.innerHTML = `
+                            <div style='text-align:center;color:#fff;'>
                                 <div style='font-size:20px;font-weight:bold;margin-bottom:8px;color:#aaf;'>Marechais de São Gabriel</div>
                                 <b style='font-size:17px;'>${m.nome}</b><br><br>
                                 <img src='${foto}' alt='${m.nome}' class='img-prefeito' style='border:1.5px solid #aaa;background:#444;'>
@@ -757,7 +590,8 @@
                     box.style.position = 'fixed';
                     box.style.top = '10px';
                         box.style.right = '20px';
-                    box.style.background = 'transparent';
+                    box.style.setProperty('background', '#333', 'important');
+                    box.style.setProperty('color', '#fff', 'important');
                     box.style.border = '1.5px solid #aaa';
                     box.style.padding = '14px';
                     box.style.zIndex = 30;
@@ -792,8 +626,8 @@
                             zebra += `<div style='margin-top:6px;'><b>Obs.:</b></div>`;
                             zebra += `<div style='background:#292929;color:#fff;padding:2px 6px;border-radius:3px;'>${p.observacao}</div>`;
                         }
-                box.innerHTML = `
-                    <div style='text-align:center;color:#111;'>
+                        box.innerHTML = `
+                            <div style='text-align:center;color:#fff;'>
                                 <div style='font-size:20px;font-weight:bold;margin-bottom:8px;color:#aaf;'>Prefeitos de São Gabriel</div>
                                 <b style='font-size:17px;'>${p.nome}</b><br><br>
                                 <img src='${foto}' alt='${p.nome}' class='img-prefeito' style='border:1.5px solid #aaa;background:#444;'>
@@ -835,7 +669,8 @@
                     box.style.position = 'fixed';
                     box.style.top = '10px';
                     box.style.right = '20px';
-                    box.style.background = 'transparent';
+                    box.style.setProperty('background', '#333', 'important');
+                    box.style.setProperty('color', '#fff', 'important');
                     box.style.border = '1.5px solid #aaa';
                     box.style.padding = '14px';
                     box.style.zIndex = 30;
@@ -851,8 +686,8 @@
                     function render() {
                         const it = ilustres[idx];
                         const foto = it.foto ? it.foto : 'placeholder_prefeito.jpg';
-                box.innerHTML = `
-                    <div style='text-align:center;color:#111;'>
+                        box.innerHTML = `
+                            <div style='text-align:center;color:#fff;'>
                                 <div style='font-size:20px;font-weight:bold;margin-bottom:8px;color:#aaf;'>Homens Ilustres</div>
                                 <b style='font-size:17px;'>${it.nome}</b><br><br>
                                 <img src='${foto}' alt='${it.nome}' class='img-prefeito' style='border:1.5px solid #aaa;background:#444;'>
@@ -878,67 +713,20 @@
                     }
                     render();
                 }
-                // Controle de visibilidade dos marcadores de Lendas
-                let lendasVisible = false;
-                function addLendaMarkers() {
-                    if (!lendas || !lendas.length) {
-                        console.warn('addLendaMarkers: array `lendas` vazio ou indefinido');
-                        return;
-                    }
-                    if (!viewer) {
-                        console.warn('addLendaMarkers: viewer ainda não inicializado');
-                        return;
-                    }
-                    // evita duplicar marcadores
-                    if (lendaEntities.length) {
-                        console.log('addLendaMarkers: marcadores já adicionados, abortando duplicação');
-                        return;
-                    }
-                    console.log('addLendaMarkers: criando', lendas.length, 'marcadores');
-                    lendas.forEach((lenda, idx) => {
-                        try {
-                            const entity = viewer.entities.add({
-                                position: Cesium.Cartesian3.fromDegrees(lenda.position.lon, lenda.position.lat, 5), // 5 metros acima do solo
-                                billboard: {
-                                    image: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
-                                    width: 40,
-                                    height: 40,
-                                    verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-                                    heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-                                },
-                                lendaId: idx
-                            });
-                            lendaEntities.push(entity);
-                            console.log('addLendaMarkers: criado marcador', idx, lenda.title);
-                        } catch (e) {
-                            console.error('addLendaMarkers: falha ao criar marcador', idx, lenda, e);
-                        }
+                lendas.forEach((lenda, idx) => {
+                    const entity = viewer.entities.add({
+                        position: Cesium.Cartesian3.fromDegrees(lenda.position.lon, lenda.position.lat, 5), // 5 metros acima do solo
+                        billboard: {
+                            image: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+                            width: 40,
+                            height: 40,
+                            verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+                        },
+                        lendaId: idx
                     });
-                }
-                function removeLendaMarkers() {
-                    if (!lendaEntities || !lendaEntities.length) return;
-                    lendaEntities.forEach(ent => {
-                        try { viewer.entities.remove(ent); } catch (e) { console.warn('Erro ao remover entidade de lenda', e); }
-                    });
-                    lendaEntities.length = 0;
-                }
-                // Conecta o botão de toggle (adicionado no topo do HTML)
-                const lendasToggleBtn = document.getElementById('lendas-toggle-btn');
-                if (lendasToggleBtn) {
-                    lendasToggleBtn.style.cursor = 'pointer';
-                    // inicializa o texto para refletir a contagem real
-                    lendasToggleBtn.textContent = `marcadores Lendas (${(lendas && lendas.length) ? lendas.length : 0})`;
-                    lendasToggleBtn.onclick = () => {
-                        lendasVisible = !lendasVisible;
-                        if (lendasVisible) {
-                            addLendaMarkers();
-                            lendasToggleBtn.textContent = `marcadores Lendas (${lendas.length}) — ocultar`;
-                        } else {
-                            removeLendaMarkers();
-                            lendasToggleBtn.textContent = `marcadores Lendas (${lendas.length})`;
-                        }
-                    };
-                }
+                    lendaEntities.push(entity);
+                });
 
                 // Função para mostrar infobox de lenda com carrossel
                 function showLendaInfobox(idx) {
@@ -951,7 +739,8 @@
                     box.style.position = 'fixed';
                     box.style.top = '10px';
                         box.style.right = '20px';
-                    box.style.background = 'transparent';
+                    box.style.setProperty('background', '#494949', 'important');
+                    box.style.setProperty('color', '#fff', 'important');
                     box.style.border = '1.5px solid #aaa';
                     box.style.padding = '14px';
                     box.style.zIndex = 30;
@@ -1233,7 +1022,8 @@
                                     box.style.position = 'fixed';
                                     box.style.top = '70px';
                                         box.style.right = '20px';
-                                    box.style.background = '#222';
+                                    box.style.setProperty('background', '#494949', 'important');
+                                    box.style.setProperty('color', '#fff', 'important');
                                     box.style.border = '1.5px solid #aaa';
                                     box.style.padding = '14px';
                                     box.style.zIndex = 30;
@@ -1278,7 +1068,7 @@
                                 const tid = pickedObject.id.tourismId;
                                 const p = tourismPoints.find(x => x.id === tid);
                                 if (p) {
-                                    // mostra um infobox com carrossel (até 8 imagens)
+                                    // mostra um infobox simples
                                     let old = document.getElementById('tourism-infobox');
                                     if (old) old.parentNode.removeChild(old);
                                     const box = document.createElement('div');
@@ -1286,62 +1076,22 @@
                                     box.style.position = 'fixed';
                                     box.style.top = '10px';
                                     box.style.right = '20px';
-                                    box.style.background = 'transparent';
-                                    box.style.color = '#111';
-                                    box.style.padding = '12px';
+                                    box.style.setProperty('background', '#494949', 'important');
+                                    box.style.setProperty('color', '#fff', 'important');
+                                    box.style.color = '#fff';
+                                    box.style.padding = '10px';
                                     box.style.zIndex = 70;
                                     box.style.border = '1px solid #666';
                                     box.style.borderRadius = '8px';
-                                    box.style.width = '320px';
-                                    box.style.boxShadow = '0 2px 16px #000a';
-
-                                    // imagens: usa p.images (se existir) ou fallback para p.icon
-                                    const imgs = (p.images && p.images.length) ? p.images.slice(0,8) : (p.icon ? [p.icon] : []);
-                                    const hasMultiple = imgs.length > 1;
-                                    const firstImg = imgs.length ? imgs[0] : '';
-
-                                    box.innerHTML = `
-                                        <div style='text-align:center;color:#111;'>
-                                            <div style='font-weight:bold;font-size:16px;margin-bottom:8px;'>${p.name}</div>
-                                            <div style='text-align:center;'>
-                                                ${firstImg ? `<img id='tourism-carousel-img' src='${firstImg}' class='img-building' style='border:1px solid #666;background:#111;max-height:180px;width:auto;border-radius:6px;' />` : `<div style='height:140px;display:flex;align-items:center;justify-content:center;color:#ccc;'>Sem imagem</div>`}
-                                            </div>
-                                            ${hasMultiple ? `
-                                                <div style='display:flex;justify-content:center;align-items:center;gap:8px;margin-top:8px;'>
-                                                    <button id='tourism-prev-img' style='background:#444;color:#fff;border:1px solid #888;border-radius:4px;padding:2px 10px;cursor:pointer;'>◀</button>
-                                                    <span id='tourism-img-indicator' style='color:#aaf;'>1/${imgs.length}</span>
-                                                    <button id='tourism-next-img' style='background:#444;color:#fff;border:1px solid #888;border-radius:4px;padding:2px 10px;cursor:pointer;'>▶</button>
-                                                </div>
-                                            ` : ''}
-                                            <div style='display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:10px;'>
-                                                <button id='tourism-open-page' style='padding:6px 10px;background:#223;color:#9fd;border-radius:6px;border:1px solid #445;cursor:pointer;'>Abrir página</button>
-                                                ${p.infoUrl ? `<a id='tourism-more-info' href='${p.infoUrl}' target='_blank' style='color:#9fd;text-decoration:underline;padding:6px 10px;background:#223;border-radius:6px;border:1px solid #223;'>Mais informações</a>` : ''}
-                                                <button id='tourism-close' style='padding:6px 10px;background:#333;color:#fff;border-radius:6px;border:1px solid #444;cursor:pointer;'>Fechar</button>
-                                            </div>
-                                        </div>
-                                    `;
-
+                                    box.innerHTML = `<div style='font-weight:bold;margin-bottom:6px;'>${p.name}</div>
+                                        <div style='display:flex;gap:6px;flex-wrap:wrap;align-items:center;'>
+                                            <button id='tourism-open-page' style='padding:6px;'>Abrir página</button>
+                                            ${p.infoUrl ? `<a id='tourism-more-info' href='${p.infoUrl}' target='_blank' style='color:#9fd;text-decoration:underline;font-size:13px;margin-left:4px;'>Mais informações</a>` : ''}
+                                            <button id='tourism-close' style='padding:6px;'>Fechar</button>
+                                        </div>`;
                                     document.body.appendChild(box);
-
-                                    // Handlers
                                     document.getElementById('tourism-close').onclick = () => { if (box.parentNode) box.parentNode.removeChild(box); };
                                     document.getElementById('tourism-open-page').onclick = () => { if (p.pageUrl) window.open(p.pageUrl, '_blank'); };
-
-                                    if (hasMultiple) {
-                                        let idxImg = 0;
-                                        const imgEl = document.getElementById('tourism-carousel-img');
-                                        const indicator = document.getElementById('tourism-img-indicator');
-                                        document.getElementById('tourism-prev-img').onclick = () => {
-                                            idxImg = (idxImg - 1 + imgs.length) % imgs.length;
-                                            imgEl.src = imgs[idxImg];
-                                            indicator.textContent = `${idxImg + 1}/${imgs.length}`;
-                                        };
-                                        document.getElementById('tourism-next-img').onclick = () => {
-                                            idxImg = (idxImg + 1) % imgs.length;
-                                            imgEl.src = imgs[idxImg];
-                                            indicator.textContent = `${idxImg + 1}/${imgs.length}`;
-                                        };
-                                    }
                                 }
                                 return;
                             }
@@ -1383,7 +1133,8 @@
                     box.style.position = 'fixed';
                     box.style.top = '10px';
                     box.style.right = '20px';
-                    box.style.background = 'transparent';
+                    box.style.setProperty('background', '#494949', 'important');
+                    box.style.setProperty('color', '#fff', 'important');
                     box.style.border = '1.5px solid #aaa';
                     box.style.padding = '14px';
                     box.style.zIndex = 30;
@@ -1426,7 +1177,7 @@
                         }
                     }
                     box.innerHTML = `
-                        <div style='text-align:center;color:#111;position:relative;min-height:120px;'>
+                        <div style='text-align:center;color:#fff;position:relative;min-height:120px;'>
                             <div style='font-size:20px;font-weight:bold;margin-bottom:8px;color:#aaf;'>${data.info.title}</div>
                             <br>
                             ${carousel}
