@@ -432,7 +432,7 @@ Um dos destaques do prédio é a porta principal, talhada em madeira de cinamomo
         elevationOffset: 0,
         position: Cesium.Cartesian3.fromDegrees(-54.316974, -30.340808, 140),// 144.08
         orientation: new Cesium.HeadingPitchRoll(Cesium.Math.toRadians(-156), Cesium.Math.toRadians(0), Cesium.Math.toRadians(0)),
-        uri_base: 'Poco_low.glb',
+        uri_base: 'poco_low.glb',
         uri_detail: 'poco.glb',
         info: {
             title: 'POÇO ANTIGO',
