@@ -23,10 +23,10 @@ export const lendas = [
 		description: "A tragédia dos 'Noivos' narra a triste história de dois jovens amantes que viviam na cidade. No dia de seu casamento, um incêndio destruiu a casa da família da noiva, e ambos acabaram morrendo nas chamas. A lenda se espalhou, e os dois passaram a ser considerados protetores dos casais e do amor eterno, sendo lembrados como um símbolo de paixão que transcende a vida. A história é um dos mais comoventes relatos românticos de São Gabriel.",
 		images: ["noivos1.jpg", "noivos2.jpg"]
 	},
-			{
-				position: { lon: -54.340600, lat: -30.324200 }, // mais afastado da Guapa
-			title: "A Cigana",
-			description: "A lenda da bela Cigana é uma história de misticismo e devoção. Pouco se sabe sobre sua vida, mas a tradição oral diz que ela era uma mulher enigmática, capaz de prever o futuro e de oferecer conselhos sábios aos moradores da cidade. Sua morte e seu túmulo se tornaram um ponto de fé, e até hoje as pessoas acendem velas e fazem pedidos, acreditando em sua intervenção para solucionar problemas e trazer boa sorte.",
-			   images: ["cigana1.jpg", "cigana2.jpg"]
-		}
+	{
+		position: { lon: -54.340600, lat: -30.324200 }, // mais afastado da Guapa
+		title: "A Cigana",
+		description: "A lenda da bela Cigana é uma história de misticismo e devoção. Pouco se sabe sobre sua vida, mas a tradição oral diz que ela era uma mulher enigmática, capaz de prever o futuro e de oferecer conselhos sábios aos moradores da cidade. Sua morte e seu túmulo se tornaram um ponto de fé, e até hoje as pessoas acendem velas e fazem pedidos, acreditando em sua intervenção para solucionar problemas e trazer boa sorte.",
+		images: ["cigana1.jpg", "cigana2.jpg"]
+	}
 ];

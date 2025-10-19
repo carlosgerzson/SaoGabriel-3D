@@ -79,30 +79,28 @@
 <body>
     <div id="cesiumContainer"></div>
     
-    <!-- Painel lateral agrupando os botões de controle -->
-    <div id="left-panel" style="position:fixed;top:45px;left:5px;z-index:2;display:flex;flex-direction:column;gap:8px;">
-        <!-- Botão 'Todos' controla a visibilidade dos controles abaixo -->
-        <button id="todos-btn" aria-expanded="true" style="background:#ffd;border:1px solid #888;padding:6px 10px;border-radius:6px;font-weight:600;">Todos ▾</button>
-        <div id="left-controls" style="display:flex;flex-direction:column;gap:8px;overflow:hidden;transition:max-height 0.28s ease;">
-            <button id="toggle-osm-btn" style="background:#ffe;border:1px solid #888;padding:6px 10px;border-radius:6px;display:none;">Mostrar/ocultar OSM</button>
-            <button id="mapa-tratados-btn" style="background:#ffe;border:1px solid #888;padding:6px 10px;border-radius:6px;">Mapa SG_tratados</button>
-            <button id="mapa-1930-btn" style="background:#ffe;border:1px solid #888;padding:6px 10px;border-radius:6px;">Mapa SG_1930</button>
-            <!-- Tourism buttons (simplified) -->
-            <button id="tourism-list-btn" style="background:#ffe;border:1px solid #888;padding:6px 10px;border-radius:6px;">Lista Turismo</button>
-            <button id="tourism-toggle-btn" style="background:#ffe;border:1px solid #888;padding:6px 10px;border-radius:6px;">marcadores Turismo (8)</button>
-            <!-- Botões fixos adicionais -->
-            <button id="marechais-btn" style="background:#ffe;border:1px solid #888;padding:6px 10px;border-radius:6px;">Marechais</button>
-            <button id="ilustres-btn" style="background:#ffe;border:1px solid #888;padding:6px 10px;border-radius:6px;">Homens Ilustres</button>
+   
+        <!-- Painel lateral agrupando os botões de controle -->
+        <div id="left-panel" style="position:fixed;top:45px;left:5px;z-index:2;display:flex;flex-direction:column;gap:8px;">
+            <!-- Botão 'Todos' controla a visibilidade dos controles abaixo -->
+            <button id="todos-btn" aria-expanded="true" style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;font-weight:600;">Todos ▾</button>
+            <div id="left-controls" style="display:flex;flex-direction:column;gap:8px;overflow:hidden;transition:max-height 0.28s ease;">
+                <button id="toggle-osm-btn" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;display:none;">Mostrar/ocultar OSM</button>
+                <button id="mapa-tratados-btn" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Mapa SG_tratados</button>
+                <button id="mapa-1930-btn" style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Mapa SG_1930</button>
+                <!-- Tourism buttons (simplified) -->
+                <button id="tourism-toggle-btn" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Turismo (8)</button>
+                <!-- Botões fixos adicionais -->
+                <button id="marechais-btn" style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Marechais</button>
+                <button id="lendas-toggle-btn" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Lendas (5)</button>
+                <button id="ilustres-btn" style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Homens Ilustres</button>
+            </div>
         </div>
-    </div>
         <!-- Botão fixo de boas-vindas -->
         <button id="welcome-btn" style="position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:100;background:#333;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">Bem Vindo</button>
     <!--<select id="category-selector" style="z-index: 1; position: fixed; top: 5px; left: 5px;">
 
     </select>-->
-
-
-
 
 
     <script type="module">
@@ -164,6 +162,11 @@
 
         let viewer;
     async function init() {
+            // cores padrão para caixas (padronizar facilmente aqui)
+            const BOX_BG = '#333';
+            const BOX_FG = '#f5f5f5';
+            const BOX_ALT = '#292929';
+            const BTN_BG = '#444';
             // ...existing code...
             try {
                 // Inicializa o visualizador com Cesium World Terrain
@@ -222,12 +225,14 @@
                 if (todosBtn && leftControls) {
                     todosBtn.onclick = () => {
                         const isExpanded = todosBtn.getAttribute('aria-expanded') === 'true';
+                        // Em telas menores, ao colapsar deixamos uma altura mínima para manter botões visíveis
+                        const smallScreen = window.innerWidth <= 780;
                         if (isExpanded) {
-                            // colapsa
-                            leftControls.style.maxHeight = '0px';
-                            todosBtn.setAttribute('aria-expanded', 'false');
-                            todosBtn.innerText = 'Todos ▸';
-                        } else {
+                                    // colapsa
+                                    leftControls.style.maxHeight = smallScreen ? '48px' : '0px';
+                                    todosBtn.setAttribute('aria-expanded', 'false');
+                                    todosBtn.innerText = 'Todos ▸';
+                                } else {
                             // expande para o tamanho do conteúdo
                             leftControls.style.maxHeight = leftControls.scrollHeight + 'px';
                             todosBtn.setAttribute('aria-expanded', 'true');
@@ -236,9 +241,8 @@
                     };
                 }
                 // Tourism UI (simplified)
-                document.getElementById('tourism-list-btn').onclick = () => {
-                    showTourismListModal();
-                };
+                // Nota: o botão de "Lista Turismo" e seu modal foram removidos —
+                // mantemos apenas o toggle de marcadores (tourism-toggle-btn).
 
                 // Função que cria a caixa de boas-vindas centralizada com conteúdo da prefeitura
                 function showWelcomeBox() {
@@ -255,8 +259,8 @@
                     box.style.maxWidth = '95vw';
                     box.style.maxHeight = '70vh';
                     box.style.overflowY = 'auto';
-                    box.style.background = '#333';
-                    box.style.color = '#f5f5f5';
+                    box.style.background = BOX_BG;
+                    box.style.color = BOX_FG;
                     box.style.padding = '16px';
                     box.style.borderRadius = '10px';
                     box.style.boxShadow = '0 4px 30px rgba(0,0,0,0.4)';
@@ -289,44 +293,44 @@
                         const styleId = 'mobile-responsive-styles';
                         if (document.getElementById(styleId)) return;
                         const css = `
-                            @media (max-width: 480px) {
+                            /* Regras específicas para telefones modernos (iPhone/Android) */
+                            @media (max-width: 780px) {
                                 /* Caixa de boas-vindas - ocupa maior altura e largura reduzida */
                                 #welcome-box {
                                     left: 50% !important;
-                                    top: 5% !important;
+                                    top: 6% !important;
                                     transform: translateX(-50%) !important;
-                                    width: 95vw !important;
-                                    max-width: 95vw !important;
-                                    height: 85vh !important;
-                                    max-height: 85vh !important;
+                                    width: 94vw !important;
+                                    max-width: 94vw !important;
+                                    height: 84vh !important;
+                                    max-height: 84vh !important;
                                     overflow: auto !important;
-                                    padding: 12px !important;
+                                    padding: 14px !important;
                                     border-radius: 10px !important;
                                     box-shadow: 0 6px 40px rgba(0,0,0,0.6) !important;
                                     z-index: 200 !important;
                                 }
                                 /* Tornar botões e textos maiores para touch */
                                 #welcome-box button, #welcome-box a {
-                                    padding: 10px 12px !important;
-                                    font-size: 15px !important;
+                                    padding: 12px 14px !important;
+                                    font-size: 16px !important;
                                     border-radius: 8px !important;
                                 }
 
-                                
                                 /* Ajuste geral dos infoboxes para layout em coluna e conteúdo rolável */
-                                #infobox, #prefeitos-box, #marechais-box, #ilustres-box, #infobox-lenda, #tourism-infobox, #tourism-list-modal {
+                                #infobox, #prefeitos-box, #marechais-box, #ilustres-box, #infobox-lenda, #tourism-infobox {
                                     left: 50% !important;
                                     right: auto !important;
-                                    top: 4% !important;
+                                    top: 6% !important;
                                     transform: translateX(-50%) !important;
-                                    width: 95vw !important;
-                                    max-width: 95vw !important;
-                                    /* Aumenta um pouco a altura no mobile para garantir que o botão Fechar fique visível */
-                                    height: 92vh !important;
-                                    max-height: 92vh !important;
+                                    width: 94vw !important;
+                                    max-width: 94vw !important;
+                                    /* Aumenta a altura no mobile para garantir conteúdo legível */
+                                    height: 86vh !important;
+                                    max-height: 86vh !important;
                                     overflow: hidden !important; /* container principal não rola; conteúdo interno rola */
                                     border-radius: 10px !important;
-                                    padding: 12px !important;
+                                    padding: 14px !important;
                                     box-sizing: border-box !important;
                                     z-index: 200 !important;
                                     display: flex !important;
@@ -334,7 +338,7 @@
                                 }
 
                                 /* Conteúdo interno (primeiro filho) fica rolável; botão de fechar fica fixo na base do container */
-                                #infobox > div, #prefeitos-box > div, #marechais-box > div, #ilustres-box > div, #infobox-lenda > div, #tourism-infobox > div, #tourism-list-modal > div {
+                                #infobox > div, #prefeitos-box > div, #marechais-box > div, #ilustres-box > div, #infobox-lenda > div, #tourism-infobox > div {
                                     overflow: auto !important;
                                     flex: 1 1 auto !important;
                                     display: flex !important;
@@ -343,8 +347,8 @@
 
                                 /* Garante que as imagens não ocupem espaço excessivo e empurrem o botão para fora */
                                 .img-building, .img-prefeito, .img-lenda {
-                                    /* reduzimos um pouco a altura das imagens para abrir espaço para botões */
-                                    max-height: calc(34vh) !important;
+                                    /* aumenta a reserva para imagem, mas limita para não ultrapassar o viewport */
+                                    max-height: 40vh !important;
                                     width: auto !important;
                                     object-fit: contain !important;
                                     display: block !important;
@@ -356,12 +360,70 @@
                                 #ilustres-box button#ilustres-close,
                                 #prefeitos-box button#prefeitos-close,
                                 #infobox button#close-infobox,
-                                #infobox-lenda button#close-infobox-lenda,
-                                #tourism-list-modal button#close-tourism-list {
+                                #infobox-lenda button#close-infobox-lenda {
                                     align-self: center !important;
                                     margin-top: 12px !important;
                                     flex-shrink: 0 !important;
                                 }
+
+                                /* Left-panel stays at top-left on most phones; make controls scrollable vertically
+                                   Botões maiores, área limitada para evitar cobrir todo o mapa (rolagem interna) */
+                                #left-panel {
+                                    left: 8px !important;
+                                    right: auto !important;
+                                    top: 12px !important;
+                                    bottom: auto !important;
+                                    display: flex !important;
+                                    flex-direction: column !important;
+                                    gap: 8px !important;
+                                    align-items: flex-start !important;
+                                    /* reduzir z-index para ficar atrás das infoboxes (infoboxes usam z ~200) */
+                                    z-index: 40 !important;
+                                    max-width: 46vw !important; /* ocupa até metade da largura para mobile */
+                                }
+                                #left-controls {
+                                    display: flex !important;
+                                    flex-direction: column !important;
+                                    gap: 8px !important;
+                                    overflow-x: hidden !important;
+                                    overflow-y: auto !important;
+                                    max-height: 64vh !important; /* limita a área e permite rolagem */
+                                    width: 100% !important;
+                                    padding: 6px 4px !important;
+                                    -webkit-overflow-scrolling: touch !important;
+                                }
+                                /* botões do painel: largura mínima e padding fixo para evitar compressão/resize ao colapsar */
+                                #left-panel button, #left-controls button {
+                                    padding: 10px 12px !important;
+                                    font-size: 15px !important;
+                                    border-radius: 8px !important;
+                                    white-space: normal !important; /* permite quebra de linha em labels longas */
+                                    text-align: left !important;
+                                    min-width: 84px !important;
+                                    box-sizing: border-box !important;
+                                }
+                                /* garantir que o botão 'Todos' mantenha estilo previsível (não encolha) */
+                                #todos-btn {
+                                    padding: 8px 10px !important;
+                                    font-size: 14px !important;
+                                    min-width: 88px !important;
+                                    box-sizing: border-box !important;
+                                }
+
+                                /* transição consistente para expand/collapse */
+                                #left-controls {
+                                    transition: max-height 0.28s ease !important;
+                                }
+                            }
+
+                            /* Reforço para telas ainda menores (ex: telefones compactos) */
+                            @media (max-width: 420px) {
+                                #infobox, #prefeitos-box, #marechais-box, #ilustres-box, #infobox-lenda, #tourism-infobox {
+                                    width: 96vw !important;
+                                    height: 88vh !important;
+                                    padding: 12px !important;
+                                }
+                                .img-building, .img-prefeito, .img-lenda { max-height: 42vh !important; }
                             }
                         `;
                         const st = document.createElement('style');
@@ -424,57 +486,43 @@
                     tourismEntities = [];
                 }
 
-                function showTourismListModal() {
-                    let old = document.getElementById('tourism-list-modal');
-                    if (old) old.parentNode.removeChild(old);
-                    const modal = document.createElement('div');
-                    modal.id = 'tourism-list-modal';
-                    modal.style.position = 'fixed';
-                    modal.style.top = '80px';
-                    modal.style.right = '20px';
-                    modal.style.setProperty('background', '#666', 'important');
-                    modal.style.setProperty('color', '#fff', 'important');
-                    modal.style.padding = '12px';
-                    modal.style.zIndex = 60;
-                    modal.style.border = '1px solid #666';
-                    modal.style.borderRadius = '8px';
-                    modal.style.maxHeight = '70vh';
-                    modal.style.overflowY = 'auto';
-                    modal.style.minWidth = '220px';
-                    modal.style.fontSize = '14px';
-                    modal.innerHTML = `<div style='font-weight:bold;margin-bottom:8px;'>Pontos Turísticos</div>`;
-                    tourismPoints.forEach(p => {
-                        const item = document.createElement('div');
-                        item.style.marginBottom = '6px';
-                        item.innerHTML = `<div style='font-weight:bold;'>${p.name}</div>
-                            <div style='display:flex;gap:6px;margin-top:4px;align-items:center;'>
-                                <button data-id='${p.id}' class='open-page' style='padding:4px 6px;font-size:13px;'>Abrir página</button>
-                                ${p.infoUrl ? `<a href='${p.infoUrl}' target='_blank' style='color:#9fd;margin-left:6px;text-decoration:underline;font-size:13px;'>Mais informações</a>` : ''}
-                            </div>`;
-                        modal.appendChild(item);
-                    });
-                    const closeBtn = document.createElement('div');
-                    closeBtn.style.marginTop = '8px';
-                    closeBtn.innerHTML = `<button id='close-tourism-list' style='padding:6px 10px;'>Fechar</button>`;
-                    modal.appendChild(closeBtn);
-                    document.body.appendChild(modal);
-                    modal.querySelectorAll('.open-page').forEach(b => b.onclick = (e) => {
-                        const id = e.target.getAttribute('data-id');
-                        const p = tourismPoints.find(x => x.id === id);
-                        if (p && p.pageUrl) window.open(p.pageUrl, '_blank');
-                    });
-                    // apenas abre páginas individuais
-                    document.getElementById('close-tourism-list').onclick = () => { if (modal.parentNode) modal.parentNode.removeChild(modal); };
-                    modal.querySelectorAll('.open-page').forEach(b => b.onclick = (e) => {
-                        const id = e.target.getAttribute('data-id');
-                        const p = tourismPoints.find(x => x.id === id);
-                        if (p && p.pageUrl) window.open(p.pageUrl, '_blank');
-                    });
-                }
+                // showTourismListModal removed — lista de turismo foi eliminada do menu
                
 
                 // Adiciona marcadores das lendas
                 const lendaEntities = [];
+                // Estado do toggle de Lendas (botão no menu 'Todos')
+                let lendasMarkersVisible = false;
+                // Handler do botão de Lendas (adicionado ao menu 'Todos')
+                const lendasToggleBtn = document.getElementById('lendas-toggle-btn');
+                if (lendasToggleBtn) {
+                    lendasToggleBtn.onclick = () => {
+                        lendasMarkersVisible = !lendasMarkersVisible;
+                        // Alterna visibilidade das entidades já criadas
+                        lendaEntities.forEach(ent => {
+                            try { ent.show = lendasMarkersVisible; } catch (e) { /* ent pode ser indefinido */ }
+                        });
+                        // manter o texto fixo em 'Lendas (5)'
+                        lendasToggleBtn.innerText = 'Lendas (5)';
+                        // Se marcadores devem aparecer, cria-los caso ainda não existam
+                        if (lendasMarkersVisible && lendaEntities.length === 0 && typeof lendas !== 'undefined') {
+                            lendas.forEach((lenda, idx) => {
+                                const entity = viewer.entities.add({
+                                    position: Cesium.Cartesian3.fromDegrees(lenda.position.lon, lenda.position.lat, 5),
+                                    billboard: {
+                                        image: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+                                        width: 40,
+                                        height: 40,
+                                        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                                        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+                                    },
+                                    lendaId: idx
+                                });
+                                lendaEntities.push(entity);
+                            });
+                        }
+                    };
+                }
                 // Marcador para carrossel de prefeitos (sobre a prefeitura)
                 const prefeituraData = buildingsMap['494741651'];
                 let prefeitosMarker = null;
@@ -517,9 +565,9 @@
                     box.id = 'marechais-box';
                     box.style.position = 'fixed';
                     box.style.top = '10px';
-                        box.style.right = '20px';
-                    box.style.setProperty('background', '#333', 'important');
-                    box.style.setProperty('color', '#fff', 'important');
+                    box.style.right = '20px';
+                    box.style.setProperty('background', BOX_BG, 'important');
+                    box.style.setProperty('color', BOX_FG, 'important');
                     box.style.border = '1.5px solid #aaa';
                     box.style.padding = '14px';
                     box.style.zIndex = 30;
@@ -527,7 +575,7 @@
                     box.style.boxShadow = '0 2px 16px #000a';
                     box.style.borderRadius = '10px';
                     box.style.fontFamily = 'sans-serif';
-                        box.style.transform = 'translateX(380px)';
+                    box.style.transform = 'translateX(380px)';
                     box.style.opacity = '0';
                     box.style.transition = 'transform 0.6s cubic-bezier(.6,1.5,.4,1), opacity 0.4s';
                     document.body.appendChild(box);
@@ -543,24 +591,24 @@
                         let zebra = '';
                         if (m.resumo) {
                             let descParts = m.resumo.split(/<br\s*\/?>/);
-                            zebra = descParts.map((part, i) => `<div style='background:${i%2===0?'#333':'#292929'};color:#fff;padding:4px 8px;border-radius:3px;margin-bottom:4px;'>${part}</div>`).join('');
+                            zebra = descParts.map((part, i) => `<div style='background:${i%2===0?BOX_BG:BOX_ALT};color:${BOX_FG};padding:4px 8px;border-radius:3px;margin-bottom:4px;'>${part}</div>`).join('');
                         }
                         if (m.observacao) {
                             zebra += `<div style='margin-top:6px;'><b>Obs.:</b></div>`;
-                            zebra += `<div style='background:#292929;color:#fff;padding:2px 6px;border-radius:3px;'>${m.observacao}</div>`;
+                            zebra += `<div style='background:${BOX_ALT};color:${BOX_FG};padding:2px 6px;border-radius:3px;'>${m.observacao}</div>`;
                         }
                         box.innerHTML = `
                             <div style='text-align:center;color:#fff;'>
-                                <div style='font-size:20px;font-weight:bold;margin-bottom:8px;color:#aaf;'>Marechais de São Gabriel</div>
+                                <div style='font-size:20px;font-weight:bold;margin-bottom:8px;color:#fff;'>Marechais de São Gabriel</div>
                                 <b style='font-size:17px;'>${m.nome}</b><br><br>
-                                <img src='${foto}' alt='${m.nome}' class='img-prefeito' style='border:1.5px solid #aaa;background:#444;'>
+                                <img src='${foto}' alt='${m.nome}' class='img-prefeito' style='border:1.5px solid #aaa;background:'+BTN_BG+';'>
                                 <div style='margin-top:12px;text-align:left;font-size:15px;'>${zebra}</div>
                                 <div style='display:flex;justify-content:space-between;margin-top:12px;'>
-                                    <button id='marechais-prev' style='background:#444;color:#fff;border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>◀</button>
-                                    <span style='color:#aaf;'>${idx + 1} / ${marechaisData.length}</span>
-                                    <button id='marechais-next' style='background:#444;color:#fff;border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>▶</button>
+                                    <button id='marechais-prev' style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>◀</button>
+                                    <span style='color:#fff;'>${idx + 1} / ${marechaisData.length}</span>
+                                    <button id='marechais-next' style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>▶</button>
                                 </div>
-                                <button id='marechais-close' style='margin-top:14px;background:#333;color:#fff;border:1px solid #888;border-radius:4px;padding:4px 18px;cursor:pointer;'>Fechar</button>
+                                <button id='marechais-close' style='margin-top:14px;background:'+BOX_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:4px 18px;cursor:pointer;'>Fechar</button>
                             </div>`;
                         document.getElementById('marechais-prev').onclick = () => { idx = (idx - 1 + marechaisData.length) % marechaisData.length; render(); };
                         document.getElementById('marechais-next').onclick = () => { idx = (idx + 1) % marechaisData.length; render(); };
@@ -590,8 +638,8 @@
                     box.style.position = 'fixed';
                     box.style.top = '10px';
                         box.style.right = '20px';
-                    box.style.setProperty('background', '#333', 'important');
-                    box.style.setProperty('color', '#fff', 'important');
+                    box.style.setProperty('background', BOX_BG, 'important');
+                    box.style.setProperty('color', BOX_FG, 'important');
                     box.style.border = '1.5px solid #aaa';
                     box.style.padding = '14px';
                     box.style.zIndex = 30;
@@ -619,27 +667,27 @@
                         if (p.periodos && p.periodos.length) {
                             zebra += `<div style='margin-bottom:2px;'><b>Período(s):</b></div>`;
                             p.periodos.forEach((per, i) => {
-                                zebra += `<div style='background:${i%2===0?'#333':'#292929'};color:#fff;padding:2px 6px;border-radius:3px;'>${per}</div>`;
+                                zebra += `<div style='background:${i%2===0?BOX_BG:BOX_ALT};color:${BOX_FG};padding:2px 6px;border-radius:3px;'>${per}</div>`;
                             });
                         }
                         if (p.observacao) {
                             zebra += `<div style='margin-top:6px;'><b>Obs.:</b></div>`;
-                            zebra += `<div style='background:#292929;color:#fff;padding:2px 6px;border-radius:3px;'>${p.observacao}</div>`;
+                            zebra += `<div style='background:${BOX_ALT};color:${BOX_FG};padding:2px 6px;border-radius:3px;'>${p.observacao}</div>`;
                         }
                         box.innerHTML = `
                             <div style='text-align:center;color:#fff;'>
-                                <div style='font-size:20px;font-weight:bold;margin-bottom:8px;color:#aaf;'>Prefeitos de São Gabriel</div>
+                                <div style='font-size:20px;font-weight:bold;margin-bottom:8px;color:#fff;'>Prefeitos de São Gabriel</div>
                                 <b style='font-size:17px;'>${p.nome}</b><br><br>
-                                <img src='${foto}' alt='${p.nome}' class='img-prefeito' style='border:1.5px solid #aaa;background:#444;'>
+                                <img src='${foto}' alt='${p.nome}' class='img-prefeito' style='border:1.5px solid #aaa;background:'+BTN_BG+';'>
                                 <div style='margin-top:12px;text-align:left;font-size:15px;'>
                                     ${zebra}
                                 </div>
                                 <div style='display:flex;justify-content:space-between;margin-top:12px;'>
-                                    <button id='prefeitos-prev' style='background:#444;color:#fff;border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>◀</button>
-                                    <span style='color:#aaf;'>${idx + 1} / ${prefeitos.length}</span>
-                                    <button id='prefeitos-next' style='background:#444;color:#fff;border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>▶</button>
+                                    <button id='prefeitos-prev' style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>◀</button>
+                                    <span style='color:#fff;'>${idx + 1} / ${prefeitos.length}</span>
+                                    <button id='prefeitos-next' style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>▶</button>
                                 </div>
-                                <button id='prefeitos-close' style='margin-top:14px;background:#333;color:#fff;border:1px solid #888;border-radius:4px;padding:4px 18px;cursor:pointer;'>Fechar</button>
+                                <button id='prefeitos-close' style='margin-top:14px;background:'+BOX_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:4px 18px;cursor:pointer;'>Fechar</button>
                             </div>`;
                         document.getElementById('prefeitos-prev').onclick = () => { idx = (idx - 1 + prefeitos.length) % prefeitos.length; render(); };
                         document.getElementById('prefeitos-next').onclick = () => { idx = (idx + 1) % prefeitos.length; render(); };
@@ -669,8 +717,8 @@
                     box.style.position = 'fixed';
                     box.style.top = '10px';
                     box.style.right = '20px';
-                    box.style.setProperty('background', '#333', 'important');
-                    box.style.setProperty('color', '#fff', 'important');
+                    box.style.setProperty('background', BOX_BG, 'important');
+                    box.style.setProperty('color', BOX_FG, 'important');
                     box.style.border = '1.5px solid #aaa';
                     box.style.padding = '14px';
                     box.style.zIndex = 30;
@@ -688,18 +736,17 @@
                         const foto = it.foto ? it.foto : 'placeholder_prefeito.jpg';
                         box.innerHTML = `
                             <div style='text-align:center;color:#fff;'>
-                                <div style='font-size:20px;font-weight:bold;margin-bottom:8px;color:#aaf;'>Homens Ilustres</div>
+                                <div style='font-size:20px;font-weight:bold;margin-bottom:8px;color:#fff;'>Homens Ilustres</div>
                                 <b style='font-size:17px;'>${it.nome}</b><br><br>
-                                <img src='${foto}' alt='${it.nome}' class='img-prefeito' style='border:1.5px solid #aaa;background:#444;'>
+                                <img src='${foto}' alt='${it.nome}' class='img-prefeito' style='border:1.5px solid #aaa;background:'+BTN_BG+';'>
                                 <div style='margin-top:12px;text-align:left;font-size:14px;color:#ddd;'>${it.resumo}</div>
                                 <div style='display:flex;justify-content:space-between;margin-top:12px;'>
-                                    <button id='ilustres-prev' style='background:#444;color:#fff;border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>◀</button>
-                                    <span style='color:#aaf;'>${idx + 1} / ${ilustres.length}</span>
-                                    <button id='ilustres-next' style='background:#444;color:#fff;border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>▶</button>
+                                    <button id='ilustres-prev' style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>◀</button>
+                                    <span style='color:#fff;'>${idx + 1} / ${ilustres.length}</span>
+                                    <button id='ilustres-next' style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>▶</button>
                                 </div>
                                 <div style='margin-top:10px;display:flex;gap:8px;justify-content:center;'>
-                                    ${it.fonte ? `<a href='${it.fonte}' target='_blank' style='color:#9fd;text-decoration:underline;padding:6px 10px;background:#223;border-radius:4px;'>Fonte</a>` : ''}
-                                    <button id='ilustres-close' style='background:#333;color:#fff;border:1px solid #888;border-radius:4px;padding:4px 12px;cursor:pointer;'>Fechar</button>
+                                    <button id='ilustres-close' style='background:'+BOX_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:4px 12px;cursor:pointer;'>Fechar</button>
                                 </div>
                             </div>`;
                         document.getElementById('ilustres-prev').onclick = () => { idx = (idx - 1 + ilustres.length) % ilustres.length; render(); };
@@ -739,8 +786,8 @@
                     box.style.position = 'fixed';
                     box.style.top = '10px';
                         box.style.right = '20px';
-                    box.style.setProperty('background', '#494949', 'important');
-                    box.style.setProperty('color', '#fff', 'important');
+                    box.style.setProperty('background', BOX_BG, 'important');
+                    box.style.setProperty('color', BOX_FG, 'important');
                     box.style.border = '1.5px solid #aaa';
                     box.style.padding = '14px';
                     box.style.zIndex = 30;
@@ -758,7 +805,7 @@
                     let zebraDesc = '';
                     if (lenda.description) {
                         let descParts = lenda.description.split(/<br\s*\/?><br\s*\/?/);
-                        zebraDesc = descParts.map((part, i) => `<div style='background:${i%2===0?'#333':'#292929'};color:#fff;padding:4px 8px;border-radius:3px;margin-bottom:4px;'>${part}</div>`).join('');
+                        zebraDesc = descParts.map((part, i) => `<div style='background:${i%2===0?BOX_BG:BOX_ALT};color:${BOX_FG};padding:4px 8px;border-radius:3px;margin-bottom:4px;'>${part}</div>`).join('');
                     }
 
                     let carousel = '';
@@ -770,18 +817,18 @@
                             <div id="carousel-lenda" style="text-align:center;">
                                 <img id="carousel-img" src="${lenda.images[0]}" class="img-lenda" />
                                 <br>
-                                <button id="prev-img" style='background:#444;color:#fff;border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>◀</button>
-                                <span id="img-indicator" style='color:#aaf;'>1/${lenda.images.length}</span>
-                                <button id="next-img" style='background:#444;color:#fff;border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>▶</button>
+                                <button id="prev-img" style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>◀</button>
+                                <span id="img-indicator" style='color:${BOX_FG};'>1/${lenda.images.length}</span>
+                                <button id="next-img" style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>▶</button>
                             </div>`;
                         }
                     }
                     box.innerHTML = `
                         <div style='text-align:center;color:#fff;'>
-                            <div style='font-size:20px;font-weight:bold;margin-bottom:8px;color:#aaf;'>${lenda.title}</div>
+                            <div style='font-size:20px;font-weight:bold;margin-bottom:8px;color:#fff;'>${lenda.title}</div>
                             ${carousel}
                             <div style='margin-top:12px;text-align:left;font-size:15px;'>${zebraDesc}</div>
-                            <div style='margin-top:12px;'><button id='close-infobox-lenda' style='background:#333;color:#fff;border:1px solid #888;border-radius:4px;padding:4px 18px;cursor:pointer;'>Fechar</button></div>
+                            <div style='margin-top:12px;'><button id='close-infobox-lenda' style='background:'+BOX_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:4px 18px;cursor:pointer;'>Fechar</button></div>
                         </div>
                     `;
                     document.getElementById('close-infobox-lenda').onclick = () => {
@@ -1022,8 +1069,8 @@
                                     box.style.position = 'fixed';
                                     box.style.top = '70px';
                                         box.style.right = '20px';
-                                    box.style.setProperty('background', '#494949', 'important');
-                                    box.style.setProperty('color', '#fff', 'important');
+                                    box.style.setProperty('background', BOX_BG, 'important');
+                                    box.style.setProperty('color', BOX_FG, 'important');
                                     box.style.border = '1.5px solid #aaa';
                                     box.style.padding = '14px';
                                     box.style.zIndex = 30;
@@ -1040,11 +1087,11 @@
                                     document.body.appendChild(box);
                                     box.innerHTML = `
                                         <div style='text-align:center;color:#fff;'>
-                                            <div style='font-size:20px;font-weight:bold;margin-bottom:8px;color:#aaf;'>Prédio OSM</div>
+                                            <div style='font-size:20px;font-weight:bold;margin-bottom:8px;color:#fff;'>Prédio OSM</div>
                                             <small style='color:#ccc;'>ID: ${elementId}</small><br><br>
                                             <div style='margin-top:12px;text-align:left;font-size:15px;'>
                                                 Coordenadas:<br>
-                                                <span style='color:#aaf;'>${coords ? `${coords.lat}, ${coords.lon} (alt: ${coords.height}m)` : 'Indisponível'}</span>
+                                                <span style='color:#fff;'>${coords ? `${coords.lat}, ${coords.lon} (alt: ${coords.height}m)` : 'Indisponível'}</span>
                                             </div>
                                             <div style='margin-top:12px;'><button id='close-infobox' style='background:#333;color:#fff;border:1px solid #888;border-radius:4px;padding:4px 18px;cursor:pointer;'>Fechar</button></div>
                                         </div>
@@ -1076,18 +1123,22 @@
                                     box.style.position = 'fixed';
                                     box.style.top = '10px';
                                     box.style.right = '20px';
-                                    box.style.setProperty('background', '#494949', 'important');
-                                    box.style.setProperty('color', '#fff', 'important');
-                                    box.style.color = '#fff';
+                                    box.style.setProperty('background', BOX_BG, 'important');
+                                    box.style.setProperty('color', BOX_FG, 'important');
+                                    box.style.color = BOX_FG;
                                     box.style.padding = '10px';
                                     box.style.zIndex = 70;
                                     box.style.border = '1px solid #666';
                                     box.style.borderRadius = '8px';
-                                    box.innerHTML = `<div style='font-weight:bold;margin-bottom:6px;'>${p.name}</div>
+                                    box.innerHTML = `
+                                        <div style='text-align:center;'>
+                                            <img src='${(p.images && p.images[0]) ? p.images[0] : "placeholder_tour.jpg"}' style='width:300px;height:200px;object-fit:cover;border-radius:6px;display:block;margin:0 auto 8px;' />
+                                        </div>
+                                        <div style='font-weight:bold;margin-bottom:6px;'>${p.name}</div>
                                         <div style='display:flex;gap:6px;flex-wrap:wrap;align-items:center;'>
-                                            <button id='tourism-open-page' style='padding:6px;'>Abrir página</button>
+                                            <button id='tourism-open-page' style='padding:6px;background:'+BTN_BG+';color:'+BOX_FG+';'>Abrir página</button>
                                             ${p.infoUrl ? `<a id='tourism-more-info' href='${p.infoUrl}' target='_blank' style='color:#9fd;text-decoration:underline;font-size:13px;margin-left:4px;'>Mais informações</a>` : ''}
-                                            <button id='tourism-close' style='padding:6px;'>Fechar</button>
+                                            <button id='tourism-close' style='padding:6px;background:'+BOX_BG+';color:'+BOX_FG+';'>Fechar</button>
                                         </div>`;
                                     document.body.appendChild(box);
                                     document.getElementById('tourism-close').onclick = () => { if (box.parentNode) box.parentNode.removeChild(box); };
@@ -1133,8 +1184,8 @@
                     box.style.position = 'fixed';
                     box.style.top = '10px';
                     box.style.right = '20px';
-                    box.style.setProperty('background', '#494949', 'important');
-                    box.style.setProperty('color', '#fff', 'important');
+                    box.style.setProperty('background', BOX_BG, 'important');
+                    box.style.setProperty('color', BOX_FG, 'important');
                     box.style.border = '1.5px solid #aaa';
                     box.style.padding = '14px';
                     box.style.zIndex = 30;
@@ -1154,12 +1205,12 @@
                     let zebraDesc = '';
                     if (data.info.description) {
                         let descParts = data.info.description.split(/<br\s*\/?><br\s*\/?/);
-                        zebraDesc = descParts.map((part, i) => `<div style='background:${i%2===0?'#333':'#292929'};color:#fff;padding:4px 8px;border-radius:3px;margin-bottom:4px;'>${part}</div>`).join('');
+                        zebraDesc = descParts.map((part, i) => `<div style='background:${i%2===0?BOX_BG:BOX_ALT};color:${BOX_FG};padding:4px 8px;border-radius:3px;margin-bottom:4px;'>${part}</div>`).join('');
                     }
 
                     let extraBtn = '';
                     if (data.uri_base && data.uri_detail) {
-                        extraBtn = `<button id='back-to-low' style='background:#444;color:#fff;border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>Voltar ao modelo simplificado</button> `;
+                        extraBtn = `<button id='back-to-low' style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>Voltar ao modelo simplificado</button> `;
                     }
                     let carousel = '';
                     if (data.info.images && data.info.images.length > 0) {
@@ -1170,21 +1221,21 @@
                             <div id="carousel-glb" style="text-align:center;">
                                 <img id="carousel-img-glb" src="${data.info.images[0]}" class="img-building" />
                                 <br>
-                                <button id="prev-img-glb" style='background:#444;color:#fff;border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>◀</button>
-                                <span id="img-indicator-glb" style='color:#aaf;'>1/${data.info.images.length}</span>
-                                <button id="next-img-glb" style='background:#444;color:#fff;border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>▶</button>
+                                <button id="prev-img-glb" style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>◀</button>
+                                <span id="img-indicator-glb" style='color:${BOX_FG};'>1/${data.info.images.length}</span>
+                                <button id="next-img-glb" style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>▶</button>
                             </div>`;
                         }
                     }
                     box.innerHTML = `
                         <div style='text-align:center;color:#fff;position:relative;min-height:120px;'>
-                            <div style='font-size:20px;font-weight:bold;margin-bottom:8px;color:#aaf;'>${data.info.title}</div>
+                            <div style='font-size:20px;font-weight:bold;margin-bottom:8px;color:#fff;'>${data.info.title}</div>
                             <br>
                             ${carousel}
                             <div style='margin-top:12px;text-align:left;font-size:15px;'>${zebraDesc}</div>
                             <div style='height:48px;'></div>
-                            <div style='position:sticky;bottom:0;left:0;width:100%;background:#222;padding-top:8px;padding-bottom:8px;z-index:2;display:flex;gap:8px;justify-content:center;box-shadow:0 -2px 8px #000a;'>
-                                ${extraBtn}<button id='close-infobox' style='background:#333;color:#fff;border:1px solid #888;border-radius:4px;padding:4px 18px;cursor:pointer;'>Fechar</button>
+                            <div style='position:sticky;bottom:0;left:0;width:100%;background:'+BOX_ALT+';padding-top:8px;padding-bottom:8px;z-index:2;display:flex;gap:8px;justify-content:center;box-shadow:0 -2px 8px #000a;'>
+                                ${extraBtn}<button id='close-infobox' style='background:'+BOX_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:4px 18px;cursor:pointer;'>Fechar</button>
                             </div>
                         </div>
                     `;
