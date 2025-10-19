@@ -85,7 +85,7 @@
             <!-- Botão 'Todos' controla a visibilidade dos controles abaixo -->
             <button id="todos-btn" aria-expanded="true" style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;font-weight:600;">Todos ▾</button>
             <div id="left-controls" style="display:flex;flex-direction:column;gap:8px;overflow:hidden;transition:max-height 0.28s ease;">
-                <button id="toggle-osm-btn" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;display:none;">Mostrar/ocultar OSM</button>
+                <!-- <button id="toggle-osm-btn" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;display:none;">Mostrar/ocultar OSM</button> -->
                 <button id="mapa-tratados-btn" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Mapa SG_tratados</button>
                 <button id="mapa-1930-btn" style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Mapa SG_1930</button>
                 <!-- Tourism buttons (simplified) -->
@@ -224,20 +224,16 @@
                 }
                 if (todosBtn && leftControls) {
                     todosBtn.onclick = () => {
-                        const isExpanded = todosBtn.getAttribute('aria-expanded') === 'true';
-                        // Em telas menores, ao colapsar deixamos uma altura mínima para manter botões visíveis
-                        const smallScreen = window.innerWidth <= 780;
-                        if (isExpanded) {
-                                    // colapsa
-                                    leftControls.style.maxHeight = smallScreen ? '48px' : '0px';
-                                    todosBtn.setAttribute('aria-expanded', 'false');
-                                    todosBtn.innerText = 'Todos ▸';
-                                } else {
-                            // expande para o tamanho do conteúdo
-                            leftControls.style.maxHeight = leftControls.scrollHeight + 'px';
-                            todosBtn.setAttribute('aria-expanded', 'true');
-                            todosBtn.innerText = 'Todos ▾';
-                        }
+                        // Implementação simples: alterna display dos botões filhos dentro de #left-controls
+                        const children = Array.from(leftControls.children).filter(ch => ch !== todosBtn);
+                        if (!children.length) return;
+                        // verifica visibilidade do primeiro filho
+                        const firstVisible = getComputedStyle(children[0]).display !== 'none';
+                        children.forEach(ch => {
+                            ch.style.display = firstVisible ? 'none' : '';
+                        });
+                        todosBtn.setAttribute('aria-expanded', (!firstVisible).toString());
+                        todosBtn.innerText = firstVisible ? 'Todos ▸' : 'Todos ▾';
                     };
                 }
                 // Tourism UI (simplified)
@@ -294,7 +290,7 @@
                         if (document.getElementById(styleId)) return;
                         const css = `
                             /* Regras específicas para telefones modernos (iPhone/Android) */
-                            @media (max-width: 780px) {
+                            @media (max-width: 420px) {
                                 /* Caixa de boas-vindas - ocupa maior altura e largura reduzida */
                                 #welcome-box {
                                     left: 50% !important;
