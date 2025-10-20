@@ -30,6 +30,7 @@
             display: block;
             margin: 0 auto;
         }
+
         .img-lenda {
             width: 300px;
             height: 200px;
@@ -38,6 +39,7 @@
             display: block;
             margin: 0 auto;
         }
+
         .img-building {
             width: 300px;
             height: 300px;
@@ -46,15 +48,22 @@
             display: block;
             margin: 0 auto;
         }
+
         /* Esconder o rodapé/credit do Cesium em telas pequenas (mobile) para evitar quebra de layout */
         @media (max-width: 600px) {
+
             /* O widget de crédito do Cesium contém links; selecionamos por seletor genérico e por href */
-            .cesium-viewer-bottom, .cesium-viewer .cesium-credit {
+            .cesium-viewer-bottom,
+            .cesium-viewer .cesium-credit {
                 display: none !important;
             }
+
             /* alternativa mais específica: esconder apenas links para cesium.com, se existirem */
-            a[href*="cesium.com"] { display: none !important; }
+            a[href*="cesium.com"] {
+                display: none !important;
+            }
         }
+
         /* Esconder botões / widgets no topo direito do Cesium (desktop e mobile) */
         /* Isto remove: pesquisa (geocoder), Home, SceneMode (plane/curve), e botão de ajuda (interrogação) */
         .cesium-viewer .cesium-viewer-toolbar,
@@ -69,8 +78,7 @@
         /* seletores alternativos por atributo/title (fallback) */
         .cesium-viewer .cesium-button[title*="Home"],
         .cesium-viewer .cesium-button[title*="Search"],
-        .cesium-viewer .cesium-button[title*="Help"]
-        {
+        .cesium-viewer .cesium-button[title*="Help"] {
             display: none !important;
         }
     </style>
@@ -78,26 +86,46 @@
 
 <body>
     <div id="cesiumContainer"></div>
-    
-   
-        <!-- Painel lateral agrupando os botões de controle -->
-        <div id="left-panel" style="position:fixed;top:45px;left:5px;z-index:2;display:flex;flex-direction:column;gap:8px;">
-            <!-- Botão 'Todos' controla a visibilidade dos controles abaixo -->
-            <button id="todos-btn" aria-expanded="true" style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;font-weight:600;">Todos ▾</button>
-            <div id="left-controls" style="display:flex;flex-direction:column;gap:8px;overflow:hidden;transition:max-height 0.28s ease;">
-                <!-- <button id="toggle-osm-btn" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;display:none;">Mostrar/ocultar OSM</button> -->
-                <button id="mapa-tratados-btn" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Mapa SG_tratados</button>
-                <button id="mapa-1930-btn" style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Mapa SG_1930</button>
-                <!-- Tourism buttons (simplified) -->
-                <button id="tourism-toggle-btn" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Turismo (8)</button>
-                <!-- Botões fixos adicionais -->
-                <button id="marechais-btn" style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Marechais</button>
-                <button id="lendas-toggle-btn" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Lendas (5)</button>
-                <button id="ilustres-btn" style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Homens Ilustres</button>
-            </div>
+
+
+    <!-- Painel lateral agrupando os botões de controle -->
+    <div id="left-panel" style="position:fixed;top:45px;left:5px;z-index:2;display:flex;flex-direction:column;gap:8px;">
+        <!-- Botão 'Todos' controla a visibilidade dos controles abaixo -->
+        <button id="todos-btn" aria-expanded="true"
+            style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;font-weight:600;">Todos
+            ▾</button>
+        <div id="left-controls"
+            style="display:flex;flex-direction:column;gap:8px;overflow:hidden;transition:max-height 0.28s ease;">
+            <!-- <button id="toggle-osm-btn" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;display:none;">Mostrar/ocultar OSM</button> -->
+            <button id="mapa-tratados-btn"
+                style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Mapa
+                SG_tratados</button>
+            <button id="mapa-1930-btn"
+                style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Mapa
+                SG_1930</button>
+            <button id="tourism-toggle-btn"
+                style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Turismo
+                (8)</button>
+            <button id="marechais-btn"
+                style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Marechais</button>
+            <button id="lendas-toggle-btn"
+                style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Lendas
+                (5)</button>
+            <button id="monuments-toggle-btn"
+                style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Monumentos
+                (3)</button>
+            <button id="ilustres-btn"
+                style="background: #292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Homens
+                Ilustres</button>
+            <button id="reset-zoom-btn" title="Centralizar Praça" aria-label="Centralizar Praça"
+                style="background:#5d0606;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Centralizar
+                Praça</button>
         </div>
-        <!-- Botão fixo de boas-vindas -->
-        <button id="welcome-btn" style="position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:100;background:#333;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">Bem Vindo</button>
+    </div>
+    <!-- Botão fixo de boas-vindas -->
+    <button id="welcome-btn"
+        style="position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:100;background:#333;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">Bem
+        Vindo</button>
     <!--<select id="category-selector" style="z-index: 1; position: fixed; top: 5px; left: 5px;">
 
     </select>-->
@@ -105,14 +133,14 @@
 
     <script type="module">
 
-    console.log('Script carregado');
+        console.log('Script carregado');
 
-    import { buildingsMap } from './buildingsData.js';
-    import { lendas } from './lendasData.js';
-    import { prefeitos } from './prefeitosData.js';
-    import { marechaisData } from './marechaisData.js';
-    import { tourismPoints } from './tourismData.js';
-    import { ilustres } from './ilustresData.js';
+        import { buildingsMap } from './buildingsData.js';
+        import { lendas } from './lendasData.js';
+        import { prefeitos } from './prefeitosData.js';
+        import { marechaisData } from './marechaisData.js';
+        import { tourismPoints } from './tourismData.js';
+        import { ilustres } from './ilustresData.js';
 
 
         // Função para adicionar um mapa histórico como plano
@@ -161,7 +189,7 @@
         }
 
         let viewer;
-    async function init() {
+        async function init() {
             // cores padrão para caixas (padronizar facilmente aqui)
             const BOX_BG = '#333';
             const BOX_FG = '#f5f5f5';
@@ -199,7 +227,7 @@
                     },
                     duration: 3.5,
                     easingFunction: Cesium.EasingFunction.QUADRATIC_IN_OUT,
-                    complete: function() {
+                    complete: function () {
                         // Depois do flyTo inicial, mostra a caixa de boas-vindas
                         try { showWelcomeBox(); } catch (e) { console.warn('Erro ao mostrar welcome box', e); }
                     }
@@ -234,6 +262,35 @@
                         });
                         todosBtn.setAttribute('aria-expanded', (!firstVisible).toString());
                         todosBtn.innerText = firstVisible ? 'Todos ▸' : 'Todos ▾';
+                    };
+                }
+                // Botão para refazer o zoom/voo inicial para a praça
+                const resetZoomBtn = document.getElementById('reset-zoom-btn');
+                if (resetZoomBtn) {
+                    resetZoomBtn.onclick = () => {
+                        try {
+                            // Evita cliques repetidos enquanto a animação acontece
+                            resetZoomBtn.disabled = true;
+                            resetZoomBtn.style.opacity = '0.6';
+                            viewer.camera.flyTo({
+                                destination: Cesium.Cartesian3.fromDegrees(pracaCentro.lon, pracaCentro.lat, pracaCentro.altura),
+                                orientation: {
+                                    heading: Cesium.Math.toRadians(0.0),
+                                    pitch: Cesium.Math.toRadians(-45.0),
+                                    roll: 0.0
+                                },
+                                duration: 3.5,
+                                easingFunction: Cesium.EasingFunction.QUADRATIC_IN_OUT,
+                                complete: function () {
+                                    resetZoomBtn.disabled = false;
+                                    resetZoomBtn.style.opacity = '';
+                                }
+                            });
+                        } catch (e) {
+                            console.warn('Erro ao refazer zoom:', e);
+                            resetZoomBtn.disabled = false;
+                            resetZoomBtn.style.opacity = '';
+                        }
                     };
                 }
                 // Tourism UI (simplified)
@@ -284,11 +341,11 @@
                     document.getElementById('welcome-close').onclick = () => { if (box.parentNode) box.parentNode.removeChild(box); };
                 }
 
-                    // Injetar CSS responsivo para mobile (aplica-se especialmente à caixa de boas-vindas e infoboxes)
-                    (function injectMobileStyles() {
-                        const styleId = 'mobile-responsive-styles';
-                        if (document.getElementById(styleId)) return;
-                        const css = `
+                // Injetar CSS responsivo para mobile (aplica-se especialmente à caixa de boas-vindas e infoboxes)
+                (function injectMobileStyles() {
+                    const styleId = 'mobile-responsive-styles';
+                    if (document.getElementById(styleId)) return;
+                    const css = `
                             /* Regras específicas para telefones modernos (iPhone/Android) */
                             @media (max-width: 420px) {
                                 /* Caixa de boas-vindas - ocupa maior altura e largura reduzida */
@@ -422,13 +479,13 @@
                                 .img-building, .img-prefeito, .img-lenda { max-height: 42vh !important; }
                             }
                         `;
-                        const st = document.createElement('style');
-                        st.id = styleId;
-                        st.appendChild(document.createTextNode(css));
-                        document.head.appendChild(st);
-                    })();
+                    const st = document.createElement('style');
+                    st.id = styleId;
+                    st.appendChild(document.createTextNode(css));
+                    document.head.appendChild(st);
+                })();
 
-                    // Handler do botão fixo 'Bem Vindo'
+                // Handler do botão fixo 'Bem Vindo'
                 const wb = document.getElementById('welcome-btn');
                 if (wb) wb.onclick = () => { showWelcomeBox(); };
 
@@ -483,7 +540,7 @@
                 }
 
                 // showTourismListModal removed — lista de turismo foi eliminada do menu
-               
+
 
                 // Adiciona marcadores das lendas
                 const lendaEntities = [];
@@ -534,6 +591,55 @@
                             heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
                         }
                     });
+                }
+
+                // Monumentos (IDs finais no buildingsMap) - toggle para destacar/mostrar marcadores
+                let monumentsVisible = false;
+                const monumentIds = ['111111111', '222222222', '333333333'];
+                const monumentEntities = [];
+                const monumentsToggleBtn = document.getElementById('monuments-toggle-btn');
+                if (monumentsToggleBtn) {
+                    monumentsToggleBtn.onclick = () => {
+                        monumentsVisible = !monumentsVisible;
+                        if (monumentsVisible) {
+                            // cria elipses (halo) no solo para cada monumento — mais legível contra o terreno
+                            monumentIds.forEach(id => {
+                                const data = buildingsMap[id];
+                                if (!data || !data.position) return;
+                                // elipse principal: halo semi-transparente
+                                const halo = viewer.entities.add({
+                                    id: 'monument_halo_' + id,
+                                    position: data.position,
+                                    ellipse: {
+                                        semiMajorAxis: 12.0,
+                                        semiMinorAxis: 8.0,
+                                        material: Cesium.Color.fromBytes(255, 200, 0, 160), // amarelo/laranja translúcido
+                                        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+                                        classificationType: Cesium.ClassificationType.BOTH
+                                    }
+                                });
+                                // sombra/outline: elipse menor e mais escura
+                                const edge = viewer.entities.add({
+                                    id: 'monument_edge_' + id,
+                                    position: data.position,
+                                    ellipse: {
+                                        semiMajorAxis: 9.0,
+                                        semiMinorAxis: 6.0,
+                                        material: Cesium.Color.BLACK.withAlpha(0.25),
+                                        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+                                        classificationType: Cesium.ClassificationType.BOTH
+                                    }
+                                });
+                                monumentEntities.push(halo, edge);
+                            });
+                            monumentsToggleBtn.innerText = 'Monumentos (3) ✓';
+                        } else {
+                            // remove halos
+                            monumentEntities.forEach(e => viewer.entities.remove(e));
+                            monumentEntities.length = 0;
+                            monumentsToggleBtn.innerText = 'Monumentos (3)';
+                        }
+                    };
                 }
 
                 // Botão para Marechais (abre carrossel)
@@ -587,7 +693,7 @@
                         let zebra = '';
                         if (m.resumo) {
                             let descParts = m.resumo.split(/<br\s*\/?>/);
-                            zebra = descParts.map((part, i) => `<div style='background:${i%2===0?BOX_BG:BOX_ALT};color:${BOX_FG};padding:4px 8px;border-radius:3px;margin-bottom:4px;'>${part}</div>`).join('');
+                            zebra = descParts.map((part, i) => `<div style='background:${i % 2 === 0 ? BOX_BG : BOX_ALT};color:${BOX_FG};padding:4px 8px;border-radius:3px;margin-bottom:4px;'>${part}</div>`).join('');
                         }
                         if (m.observacao) {
                             zebra += `<div style='margin-top:6px;'><b>Obs.:</b></div>`;
@@ -633,7 +739,7 @@
                     box.id = 'prefeitos-box';
                     box.style.position = 'fixed';
                     box.style.top = '10px';
-                        box.style.right = '20px';
+                    box.style.right = '20px';
                     box.style.setProperty('background', BOX_BG, 'important');
                     box.style.setProperty('color', BOX_FG, 'important');
                     box.style.border = '1.5px solid #aaa';
@@ -643,7 +749,7 @@
                     box.style.boxShadow = '0 2px 16px #000a';
                     box.style.borderRadius = '10px';
                     box.style.fontFamily = 'sans-serif';
-                        box.style.transform = 'translateX(380px)';
+                    box.style.transform = 'translateX(380px)';
                     box.style.opacity = '0';
                     box.style.transition = 'transform 0.6s cubic-bezier(.6,1.5,.4,1), opacity 0.4s';
                     document.body.appendChild(box);
@@ -663,7 +769,7 @@
                         if (p.periodos && p.periodos.length) {
                             zebra += `<div style='margin-bottom:2px;'><b>Período(s):</b></div>`;
                             p.periodos.forEach((per, i) => {
-                                zebra += `<div style='background:${i%2===0?BOX_BG:BOX_ALT};color:${BOX_FG};padding:2px 6px;border-radius:3px;'>${per}</div>`;
+                                zebra += `<div style='background:${i % 2 === 0 ? BOX_BG : BOX_ALT};color:${BOX_FG};padding:2px 6px;border-radius:3px;'>${per}</div>`;
                             });
                         }
                         if (p.observacao) {
@@ -701,7 +807,7 @@
                     }
                     render();
                 }
-                
+
                 // Carrossel para Homens Ilustres (foto + resumo + fonte)
                 function showIlustresCarousel(startIndex = 0) {
                     if (!ilustres || !ilustres.length) return;
@@ -781,7 +887,7 @@
                     box.id = 'infobox-lenda';
                     box.style.position = 'fixed';
                     box.style.top = '10px';
-                        box.style.right = '20px';
+                    box.style.right = '20px';
                     box.style.setProperty('background', BOX_BG, 'important');
                     box.style.setProperty('color', BOX_FG, 'important');
                     box.style.border = '1.5px solid #aaa';
@@ -791,7 +897,7 @@
                     box.style.boxShadow = '0 2px 16px #000a';
                     box.style.borderRadius = '10px';
                     box.style.fontFamily = 'sans-serif';
-                        box.style.transform = 'translateX(380px)';
+                    box.style.transform = 'translateX(380px)';
                     box.style.opacity = '0';
                     box.style.transition = 'transform 0.6s cubic-bezier(.6,1.5,.4,1), opacity 0.4s';
                     box.style.overflowY = 'auto';
@@ -801,7 +907,7 @@
                     let zebraDesc = '';
                     if (lenda.description) {
                         let descParts = lenda.description.split(/<br\s*\/?><br\s*\/?/);
-                        zebraDesc = descParts.map((part, i) => `<div style='background:${i%2===0?BOX_BG:BOX_ALT};color:${BOX_FG};padding:4px 8px;border-radius:3px;margin-bottom:4px;'>${part}</div>`).join('');
+                        zebraDesc = descParts.map((part, i) => `<div style='background:${i % 2 === 0 ? BOX_BG : BOX_ALT};color:${BOX_FG};padding:4px 8px;border-radius:3px;margin-bottom:4px;'>${part}</div>`).join('');
                     }
 
                     let carousel = '';
@@ -858,7 +964,7 @@
                 const buildingsTileset = await Cesium.createOsmBuildingsAsync();
                 // Offset vertical em metros (ajuste conforme necessário)
                 const osmOffset = 0;
-                const osmTranslation = Cesium.Cartesian3.fromElements(0,0, osmOffset, new Cesium.Cartesian3());
+                const osmTranslation = Cesium.Cartesian3.fromElements(0, 0, osmOffset, new Cesium.Cartesian3());
                 buildingsTileset.modelMatrix = Cesium.Matrix4.fromTranslation(osmTranslation);
                 viewer.scene.primitives.add(buildingsTileset);
                 // Garantir estado inicial: ocultar OSM (definimos explicitamente false aqui
@@ -1064,7 +1170,7 @@
                                     box.id = 'infobox';
                                     box.style.position = 'fixed';
                                     box.style.top = '70px';
-                                        box.style.right = '20px';
+                                    box.style.right = '20px';
                                     box.style.setProperty('background', BOX_BG, 'important');
                                     box.style.setProperty('color', BOX_FG, 'important');
                                     box.style.border = '1.5px solid #aaa';
@@ -1077,7 +1183,7 @@
                                     box.style.boxShadow = '0 2px 16px #000a';
                                     box.style.borderRadius = '10px';
                                     box.style.fontFamily = 'sans-serif';
-                                        box.style.transform = 'translateX(380px)';
+                                    box.style.transform = 'translateX(380px)';
                                     box.style.opacity = '0';
                                     box.style.transition = 'transform 0.6s cubic-bezier(.6,1.5,.4,1), opacity 0.4s';
                                     document.body.appendChild(box);
@@ -1106,27 +1212,27 @@
                             }
                             return;
                         }
-                            // Clique em marcador turístico
-                            if (pickedObject && pickedObject.id && pickedObject.id.tourismId) {
-                                const tid = pickedObject.id.tourismId;
-                                const p = tourismPoints.find(x => x.id === tid);
-                                if (p) {
-                                    // mostra um infobox simples
-                                    let old = document.getElementById('tourism-infobox');
-                                    if (old) old.parentNode.removeChild(old);
-                                    const box = document.createElement('div');
-                                    box.id = 'tourism-infobox';
-                                    box.style.position = 'fixed';
-                                    box.style.top = '10px';
-                                    box.style.right = '20px';
-                                    box.style.setProperty('background', BOX_BG, 'important');
-                                    box.style.setProperty('color', BOX_FG, 'important');
-                                    box.style.color = BOX_FG;
-                                    box.style.padding = '10px';
-                                    box.style.zIndex = 70;
-                                    box.style.border = '1px solid #666';
-                                    box.style.borderRadius = '8px';
-                                    box.innerHTML = `
+                        // Clique em marcador turístico
+                        if (pickedObject && pickedObject.id && pickedObject.id.tourismId) {
+                            const tid = pickedObject.id.tourismId;
+                            const p = tourismPoints.find(x => x.id === tid);
+                            if (p) {
+                                // mostra um infobox simples
+                                let old = document.getElementById('tourism-infobox');
+                                if (old) old.parentNode.removeChild(old);
+                                const box = document.createElement('div');
+                                box.id = 'tourism-infobox';
+                                box.style.position = 'fixed';
+                                box.style.top = '10px';
+                                box.style.right = '20px';
+                                box.style.setProperty('background', BOX_BG, 'important');
+                                box.style.setProperty('color', BOX_FG, 'important');
+                                box.style.color = BOX_FG;
+                                box.style.padding = '10px';
+                                box.style.zIndex = 70;
+                                box.style.border = '1px solid #666';
+                                box.style.borderRadius = '8px';
+                                box.innerHTML = `
                                         <div style='text-align:center;'>
                                             <img src='${(p.images && p.images[0]) ? p.images[0] : "placeholder_tour.jpg"}' style='width:300px;height:200px;object-fit:cover;border-radius:6px;display:block;margin:0 auto 8px;' />
                                         </div>
@@ -1136,12 +1242,12 @@
                                             ${p.infoUrl ? `<a id='tourism-more-info' href='${p.infoUrl}' target='_blank' style='color:#9fd;text-decoration:underline;font-size:13px;margin-left:4px;'>Mais informações</a>` : ''}
                                             <button id='tourism-close' style='padding:6px;background:'+BOX_BG+';color:'+BOX_FG+';'>Fechar</button>
                                         </div>`;
-                                    document.body.appendChild(box);
-                                    document.getElementById('tourism-close').onclick = () => { if (box.parentNode) box.parentNode.removeChild(box); };
-                                    document.getElementById('tourism-open-page').onclick = () => { if (p.pageUrl) window.open(p.pageUrl, '_blank'); };
-                                }
-                                return;
+                                document.body.appendChild(box);
+                                document.getElementById('tourism-close').onclick = () => { if (box.parentNode) box.parentNode.removeChild(box); };
+                                document.getElementById('tourism-open-page').onclick = () => { if (p.pageUrl) window.open(p.pageUrl, '_blank'); };
                             }
+                            return;
+                        }
                         // Clique em GLB lowpoly de qualquer prédio
                         if (pickedObject.id && pickedObject.id.id && pickedObject.id.id.endsWith('_low')) {
                             const idBase = pickedObject.id.id.replace('_low', '');
@@ -1201,7 +1307,7 @@
                     let zebraDesc = '';
                     if (data.info.description) {
                         let descParts = data.info.description.split(/<br\s*\/?><br\s*\/?/);
-                        zebraDesc = descParts.map((part, i) => `<div style='background:${i%2===0?BOX_BG:BOX_ALT};color:${BOX_FG};padding:4px 8px;border-radius:3px;margin-bottom:4px;'>${part}</div>`).join('');
+                        zebraDesc = descParts.map((part, i) => `<div style='background:${i % 2 === 0 ? BOX_BG : BOX_ALT};color:${BOX_FG};padding:4px 8px;border-radius:3px;margin-bottom:4px;'>${part}</div>`).join('');
                     }
 
                     let extraBtn = '';
