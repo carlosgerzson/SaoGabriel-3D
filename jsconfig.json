@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "checkJs": true
+  },
+  "exclude": [
+    "Build",
+    "Build/**",
+    "Specs",
+    "Specs/**",
+    "node_modules"
+  ]
+}

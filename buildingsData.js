@@ -1,4 +1,8 @@
 // Dados para os prédios que terão alternância
+// Garantir que `Cesium` esteja definido no escopo deste módulo para satisfazer
+// verificações estáticas (TS/JS server) e também usar a referência global em runtime.
+const Cesium = (typeof globalThis !== 'undefined' && globalThis.Cesium) ? globalThis.Cesium : (/** @type {any} */ {});
+
 export const buildingsMap = {
     '505354016': { // Barão
         elevationOffset: 0,
@@ -195,7 +199,7 @@ Conta-se que o antigo proprietário, Seu Macedo, emocionou-se ao ver o casarão 
         uri_detail: 'amarelo.glb',
         info: {
             title: 'CASARÃO AMARELO',
-           description: `O Solar do Barão de São Gabriel, conhecido como Casarão Amarelo, é um ícone da arquitetura imperial da cidade. Construído em 1860 pelo Marechal João Propício de Figueiredo Menna Barreto, o 2º Barão de São Gabriel, o casarão foi lar de várias gerações da família Menna Barreto e palco de importantes momentos da história local.<br><br>
+            description: `O Solar do Barão de São Gabriel, conhecido como Casarão Amarelo, é um ícone da arquitetura imperial da cidade. Construído em 1860 pelo Marechal João Propício de Figueiredo Menna Barreto, o 2º Barão de São Gabriel, o casarão foi lar de várias gerações da família Menna Barreto e palco de importantes momentos da história local.<br><br>
 Ao longo dos anos, abrigou o Clube Cassino Gabrielense, clínicas médicas e permanece até hoje como residência da família. O imóvel destaca-se por sua arquitetura eclética, com platibanda, florão imperial, colunas gregas, arcos e sacadas em ferro, além de um jardim com chafariz e portão de ferro batido.`,
             images: ['amarelo1.jpg', 'amarelo2.jpg', 'amarelo3.jpg']
         }
@@ -233,7 +237,7 @@ O Guarani viveu seu auge entre as décadas de 1970 e 1990, sendo palco de bailes
         uri_detail: 'cafecentral.glb',
         info: {
             title: 'CAFÉ CENTRAL',
-           description: `O Café Central foi um tradicional ponto de encontro em São Gabriel, localizado em uma dos locais mais movimentados da cidade. Nos anos 1920, era comum ver os carros de praça — os antigos táxis — estacionados em frente ao local, reforçando seu papel como referência social e comercial. A foto histórica de 1921 registra esse cenário típico da época.`,
+            description: `O Café Central foi um tradicional ponto de encontro em São Gabriel, localizado em uma dos locais mais movimentados da cidade. Nos anos 1920, era comum ver os carros de praça — os antigos táxis — estacionados em frente ao local, reforçando seu papel como referência social e comercial. A foto histórica de 1921 registra esse cenário típico da época.`,
             images: ['cafecentral.jpg']
         }
     },
@@ -412,7 +416,7 @@ Um dos destaques do prédio é a porta principal, talhada em madeira de cinamomo
         uri_detail: 'esquina_getulio.glb',
         info: {
             title: 'GUEDES BARBOSA',
-          description: `A loja Guedes Barbosa marcou época em São Gabriel, especialmente quando funcionava na esquina da Coronel Sezefredo com a Andrade Neves. Nos anos 1990, era tradição as lojas decorarem fachadas e vitrines para o Natal, tornando o centro da cidade ainda mais encantador durante as festas de fim de ano.`,
+            description: `A loja Guedes Barbosa marcou época em São Gabriel, especialmente quando funcionava na esquina da Coronel Sezefredo com a Andrade Neves. Nos anos 1990, era tradição as lojas decorarem fachadas e vitrines para o Natal, tornando o centro da cidade ainda mais encantador durante as festas de fim de ano.`,
             images: ['esquina_getulio1.jpg']
         }
     },
@@ -440,7 +444,30 @@ Um dos destaques do prédio é a porta principal, talhada em madeira de cinamomo
             images: ['poco1.jpg']
         }
     },
-   
+    '262049292': { // Museu Gaúcho da FEB
+        elevationOffset: 0,
+        position: Cesium.Cartesian3.fromDegrees(-54.3250266, -30.3359283, 170),// 144.08
+        orientation: new Cesium.HeadingPitchRoll(Cesium.Math.toRadians(-156), Cesium.Math.toRadians(0), Cesium.Math.toRadians(0)),
+        uri_base: 'museu_feb_low.glb',
+        uri_detail: 'museu_feb.glb',
+        info: {
+            title: 'HERÓIS DA FEB',
+            description: 'provisório - detalhados, contribuem para a identidade e a vivacidade do centro da cidade.',
+            images: ['monumento1.jpg']
+        }
+    },
+    '474529581': { // Clube Caixeral
+        elevationOffset: 0,
+        position: Cesium.Cartesian3.fromDegrees(-54.3186732, -30.3394415, 136),// 144.08
+        orientation: new Cesium.HeadingPitchRoll(Cesium.Math.toRadians(-156), Cesium.Math.toRadians(0), Cesium.Math.toRadians(0)),
+        uri_base: 'caixeral_low.glb',
+        uri_detail: 'caixeral.glb',
+        info: {
+            title: 'CLUBE CAIXERAL',
+            description: 'provisório - detalhados, contribuem para a identidade e a vivacidade do centro da cidade.',
+            images: ['monumento1.jpg']
+        }
+    },
     '111111111': { // Heróis da FEB
         elevationOffset: 0,
         position: Cesium.Cartesian3.fromDegrees(-54.317539, -30.340605, 137),// 144.08
