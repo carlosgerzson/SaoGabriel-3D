@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.133/Build/Cesium/Cesium.js"></script>
     <link href="https://cesium.com/downloads/cesiumjs/releases/1.133/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
-    <title>Cesium 3D</title>
+    <title>São Gabriel — OSM Variante (completo)</title>
     <style type="text/css">
         body,
         html {
@@ -92,48 +92,59 @@
     <div id="left-panel" style="position:fixed;top:45px;left:5px;z-index:2;display:flex;flex-direction:column;gap:8px;">
         <!-- Botão 'Todos' controla a visibilidade dos controles abaixo -->
         <button id="todos-btn" aria-expanded="true"
-            style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;font-weight:600;">Todos
-            ▾</button>
-        <div id="left-controls"
-            style="display:flex;flex-direction:column;gap:8px;overflow:hidden;transition:max-height 0.28s ease;">
-            <!-- <button id="toggle-osm-btn" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;display:none;">Mostrar/ocultar OSM</button> -->
-            <button id="mapa-tratados-btn"
-                style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Mapa
-                SG_tratados</button>
-            <button id="mapa-1930-btn"
-                style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Mapa
-                SG_1930</button>
-            <button id="tourism-toggle-btn"
-                style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Turismo
-                (8)</button>
-            <button id="marechais-btn"
-                style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Marechais</button>
-            <button id="lendas-toggle-btn"
-                style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Lendas
-                (5)</button>
-            <button id="monuments-toggle-btn"
-                style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Monumentos
-                (3)</button>
-            <button id="ilustres-btn"
-                style="background: #292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Homens
-                Ilustres</button>
-            <button id="reset-zoom-btn" title="Centralizar Praça" aria-label="Centralizar Praça"
-                style="background:#5d0606;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Centralizar
-                Praça</button>
+            style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;font-weight:600;">Todos ▾</button>
+        <div id="left-controls" style="display:flex;flex-direction:column;gap:8px;overflow:hidden;transition:max-height 0.28s ease;">
+            <button id="toggle-osm-btn" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Ocultar OSM</button>
+            <button id="toggle-base-btn" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Mapa Urbano</button>
+            <!-- Controles visuais para o Mapa Urbano: escolha do basemap + ajustes -->
+            <div id="urban-style-panel" style="background:rgba(0,0,0,0.45);padding:8px;border-radius:6px;border:1px solid rgba(200,200,200,0.06);display:flex;flex-direction:column;gap:6px;">
+                <div style="font-size:12px;color:#ddd;font-weight:600;">Ajuste visual (Mapa Urbano)</div>
+                <div style="display:flex;gap:8px;align-items:center;font-size:12px;color:#ddd;">
+                    <label for="urban-basemap" style="min-width:64px;">Base</label>
+                    <select id="urban-basemap" style="flex:1;padding:4px;border-radius:4px;background:#222;color:#fff;border:1px solid #444;">
+                        <option value="osm">OpenStreetMap (padrão)</option>
+                        <option value="maptiler">MapTiler (streets)</option>
+                    </select>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;font-size:12px;color:#ddd;">
+                    <label for="urban-alpha" style="min-width:64px;">Opacidade</label>
+                    <input id="urban-alpha" type="range" min="0" max="1" step="0.01" value="1" style="flex:1;" />
+                    <span id="urban-alpha-val" style="width:34px;text-align:right;">1.00</span>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;font-size:12px;color:#ddd;">
+                    <label for="urban-bright" style="min-width:64px;">Brilho</label>
+                    <input id="urban-bright" type="range" min="0.4" max="1.4" step="0.01" value="0.90" style="flex:1;" />
+                    <span id="urban-bright-val" style="width:34px;text-align:right;">0.90</span>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;font-size:12px;color:#ddd;">
+                    <label for="urban-contrast" style="min-width:64px;">Contraste</label>
+                    <input id="urban-contrast" type="range" min="0.6" max="1.6" step="0.01" value="1.00" style="flex:1;" />
+                    <span id="urban-contrast-val" style="width:34px;text-align:right;">1.00</span>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;font-size:12px;color:#ddd;">
+                    <label for="urban-sat" style="min-width:64px;">Saturação</label>
+                    <input id="urban-sat" type="range" min="0" max="2.0" step="0.01" value="0.88" style="flex:1;" />
+                    <span id="urban-sat-val" style="width:34px;text-align:right;">0.88</span>
+                </div>
+                <!-- Presets removidos: UI simplificada (apenas sliders e seleção de basemap) -->
+            </div>
+            <button id="mapa-tratados-btn" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Mapa SG_tratados</button>
+            <button id="mapa-1930-btn" style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Mapa SG_1930</button>
+            <button id="tourism-toggle-btn" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Turismo (8)</button>
+            <button id="marechais-btn" style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Marechais</button>
+            <button id="lendas-toggle-btn" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Lendas (5)</button>
+            <button id="monuments-toggle-btn" style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Monumentos (3)</button>
+            <button id="ilustres-btn" style="background: #292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Homens Ilustres</button>
+            <button id="reset-zoom-btn" title="Centralizar Praça" aria-label="Centralizar Praça" style="background:#5d0606;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Centralizar Praça</button>
         </div>
     </div>
     <!-- Botão fixo de boas-vindas -->
-    <button id="welcome-btn"
-        style="position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:100;background:#333;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">Bem
-        Vindo</button>
-    <!--<select id="category-selector" style="z-index: 1; position: fixed; top: 5px; left: 5px;">
-
-    </select>-->
+    <button id="welcome-btn" style="position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:100;background:#333;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">Bem Vindo</button>
 
 
     <script type="module">
 
-        console.log('Script carregado');
+        console.log('Script carregado - index-osm-full');
 
         import { buildingsMap } from './buildingsData.js';
         import { lendas } from './lendasData.js';
@@ -207,6 +218,20 @@
                     baseLayerPicker: false,
                 });
 
+                // Referência para camada urbana adicionada (se alguma)
+                let urbanImageryLayer = null;
+                // Se não houver nenhuma imagery layer por padrão, criaremos um fallback OSM
+                function ensureFallbackImagery() {
+                    try {
+                        if (viewer.imageryLayers.length === 0) {
+                            const osmFallback = new Cesium.OpenStreetMapImageryProvider({ url: 'https://a.tile.openstreetmap.org/' });
+                            viewer.imageryLayers.addImageryProvider(osmFallback);
+                        }
+                    } catch (e) {
+                        console.warn('Falha ao adicionar fallback OSM:', e);
+                    }
+                }
+
 
                 // Controles da câmera
                 viewer.scene.screenSpaceCameraController.rotateEventTypes = [Cesium.CameraEventType.LEFT_DRAG];
@@ -236,10 +261,205 @@
                 // Garante que as sombras estejam ativas
                 viewer.shadows = true;
 
+                // (Sem alterações forçadas ao relógio ou iluminação do globo)
+
+                // --- Base imagery switch (Satélite <-> Mapa Urbano - Carto Positron) ---
+                // Inicial: Mapa Urbano ativo por padrão. Permitimos apenas alternar ON/OFF do mapa urbano
+                let urbanBaseActive = true;
+                function setUrbanBase() {
+                    try {
+                        // adiciona camada urbana por cima das existentes (não remove outras)
+                        // remove apenas a camada urbana anterior, se existir
+                        if (urbanImageryLayer) {
+                            try { viewer.imageryLayers.remove(urbanImageryLayer); } catch (e) { }
+                            urbanImageryLayer = null;
+                        }
+                        const carto = new Cesium.UrlTemplateImageryProvider({
+                            url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+                            subdomains: ['a', 'b', 'c', 'd'],
+                            credit: 'Carto Positron'
+                        });
+                        urbanImageryLayer = viewer.imageryLayers.addImageryProvider(carto);
+                        urbanBaseActive = true;
+                        const btn = document.getElementById('toggle-base-btn');
+                        if (btn) {
+                            btn.innerText = 'Ocultar Mapa Urbano';
+                            btn.disabled = false;
+                        }
+                    } catch (e) {
+                        console.warn('Erro ao aplicar Carto Positron:', e);
+                    }
+                }
+
+                function hideUrbanBase() {
+                    try {
+                        // remove apenas a camada urbana adicionada
+                        if (urbanImageryLayer) {
+                            try { viewer.imageryLayers.remove(urbanImageryLayer); } catch (e) { }
+                            urbanImageryLayer = null;
+                        }
+                        // se não houver nenhuma outra camada, garante um fallback (OSM)
+                        ensureFallbackImagery();
+                        urbanBaseActive = false;
+                        const btn = document.getElementById('toggle-base-btn');
+                        if (btn) {
+                            btn.innerText = 'Mostrar Mapa Urbano';
+                            btn.disabled = false;
+                        }
+                    } catch (e) {
+                        console.warn('Erro ao ocultar Mapa Urbano:', e);
+                    }
+                }
+
+                // Inicializa explicitamente a base urbana (Carto Positron)
+                setUrbanBase();
+
                 // Botões para alternar mapas históricos
                 document.getElementById('mapa-tratados-btn').onclick = () => {
                     mostrarOuOcultarMapaHistorico('SG_tratados.jpg');
                 };
+                // Ativa handler do botão para alternar Mapa Urbano ON/OFF
+                const toggleBaseBtn = document.getElementById('toggle-base-btn');
+                if (toggleBaseBtn) {
+                    toggleBaseBtn.onclick = () => {
+                        if (urbanBaseActive) {
+                            hideUrbanBase();
+                        } else {
+                            setUrbanBase();
+                        }
+                    };
+                    // texto inicial já ajustado por setUrbanBase()
+                }
+                // Estado e estilos atuais para o layer urbano (padrões leves para reduzir branco)
+                let urbanProviderStyle = 'osm'; // pode ser: osm | maptiler
+                const urbanStyle = {
+                    alpha: 1.0,
+                    brightness: 0.90,
+                    contrast: 1.00,
+                    saturation: 0.88,
+                    hue: 0.0
+                };
+
+                // Cria um ImageryProvider conforme o estilo solicitado
+                function createUrbanProvider(styleName) {
+                    try {
+                        switch (styleName) {
+                            case 'carto-dark':
+                                return new Cesium.UrlTemplateImageryProvider({
+                                    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+                                    subdomains: ['a', 'b', 'c', 'd'],
+                                    credit: 'Carto Dark'
+                                });
+                            case 'stamen-toner-lite':
+                                return new Cesium.UrlTemplateImageryProvider({
+                                    url: 'https://stamen-tiles.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png',
+                                    credit: 'Stamen Toner Lite'
+                                });
+                            case 'osm':
+                                return new Cesium.OpenStreetMapImageryProvider({ url: 'https://a.tile.openstreetmap.org/' });
+                            case 'maptiler':
+                                // MapTiler raster tiles (requere token). Token fornecido pelo usuário.
+                                return new Cesium.UrlTemplateImageryProvider({
+                                    url: 'https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=UPIhGua21q5Oraty8VhJ',
+                                    credit: 'MapTiler'
+                                });
+                            case 'carto-light':
+                            default:
+                                return new Cesium.UrlTemplateImageryProvider({
+                                    url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+                                    subdomains: ['a', 'b', 'c', 'd'],
+                                    credit: 'Carto Positron'
+                                });
+                        }
+                    } catch (e) {
+                        console.warn('Erro ao criar imagery provider:', e);
+                        return new Cesium.OpenStreetMapImageryProvider({ url: 'https://a.tile.openstreetmap.org/' });
+                    }
+                }
+
+                // Aplica as propriedades ao imagery layer (se existir)
+                function applyUrbanStyleToLayer(layer, style) {
+                    if (!layer) return;
+                    try {
+                        if (typeof style.alpha === 'number') layer.alpha = Number(style.alpha);
+                        if (typeof style.brightness === 'number') layer.brightness = Number(style.brightness);
+                        if (typeof style.contrast === 'number') layer.contrast = Number(style.contrast);
+                        if (typeof style.saturation === 'number') layer.saturation = Number(style.saturation);
+                        if (typeof style.hue === 'number') layer.hue = Number(style.hue);
+                    } catch (e) {
+                        console.warn('Falha ao aplicar estilo urbano:', e);
+                    }
+                }
+
+                // Atualiza os controles UI para refletir valores atuais
+                function updateUrbanControlsUI() {
+                    const a = document.getElementById('urban-alpha');
+                    const b = document.getElementById('urban-bright');
+                    const c = document.getElementById('urban-contrast');
+                    const s = document.getElementById('urban-sat');
+                    if (a) { a.value = String(urbanStyle.alpha); }
+                    if (b) { b.value = String(urbanStyle.brightness); }
+                    if (c) { c.value = String(urbanStyle.contrast); }
+                    if (s) { s.value = String(urbanStyle.saturation); }
+                    const av = document.getElementById('urban-alpha-val'); if (av) av.textContent = Number(urbanStyle.alpha).toFixed(2);
+                    const bv = document.getElementById('urban-bright-val'); if (bv) bv.textContent = Number(urbanStyle.brightness).toFixed(2);
+                    const cv = document.getElementById('urban-contrast-val'); if (cv) cv.textContent = Number(urbanStyle.contrast).toFixed(2);
+                    const sv = document.getElementById('urban-sat-val'); if (sv) sv.textContent = Number(urbanStyle.saturation).toFixed(2);
+                }
+
+                // Liga os eventos dos sliders e botões de preset
+                function bindUrbanStyleControls() {
+                    const a = document.getElementById('urban-alpha');
+                    const b = document.getElementById('urban-bright');
+                    const c = document.getElementById('urban-contrast');
+                    const s = document.getElementById('urban-sat');
+                    if (a) a.oninput = function () { urbanStyle.alpha = Number(this.value); applyUrbanStyleToLayer(urbanImageryLayer, urbanStyle); updateUrbanControlsUI(); };
+                    if (b) b.oninput = function () { urbanStyle.brightness = Number(this.value); applyUrbanStyleToLayer(urbanImageryLayer, urbanStyle); updateUrbanControlsUI(); };
+                    if (c) c.oninput = function () { urbanStyle.contrast = Number(this.value); applyUrbanStyleToLayer(urbanImageryLayer, urbanStyle); updateUrbanControlsUI(); };
+                    if (s) s.oninput = function () { urbanStyle.saturation = Number(this.value); applyUrbanStyleToLayer(urbanImageryLayer, urbanStyle); updateUrbanControlsUI(); };
+
+                    // Presets e botão Restaurar removidos — mantemos apenas sliders.
+                }
+
+                // Quando criamos a camada urbana, aplicamos estilos e respeitamos o estilo selecionado
+                const originalSetUrbanBase = setUrbanBase;
+                setUrbanBase = function(selectedStyle) {
+                    // permitimos setUrbanBase() sem argumento para manter compatibilidade
+                    if (typeof selectedStyle === 'string') urbanProviderStyle = selectedStyle;
+                    // remove camada antiga se existir
+                    if (urbanImageryLayer) {
+                        try { viewer.imageryLayers.remove(urbanImageryLayer); } catch (e) { }
+                        urbanImageryLayer = null;
+                    }
+                    try {
+                        const provider = createUrbanProvider(urbanProviderStyle);
+                        urbanImageryLayer = viewer.imageryLayers.addImageryProvider(provider);
+                        urbanBaseActive = true;
+                        const btn = document.getElementById('toggle-base-btn');
+                        if (btn) btn.innerText = 'Ocultar Mapa Urbano';
+                        // aplica estilo atual ao novo layer
+                        applyUrbanStyleToLayer(urbanImageryLayer, urbanStyle);
+                        updateUrbanControlsUI();
+                    } catch (e) {
+                        console.warn('Erro ao setar base urbana:', e);
+                        ensureFallbackImagery();
+                    }
+                };
+
+                // Ligação do seletor de basemap no UI
+                const basemapSelect = document.getElementById('urban-basemap');
+                if (basemapSelect) {
+                    // inicializa valor
+                    basemapSelect.value = urbanProviderStyle;
+                    basemapSelect.onchange = function() {
+                        urbanProviderStyle = this.value;
+                        // re-cria a camada urbana com o novo provider e reaplica estilos
+                        if (urbanBaseActive) setUrbanBase(urbanProviderStyle);
+                    };
+                }
+
+                // Bind initial
+                bindUrbanStyleControls();
                 document.getElementById('mapa-1930-btn').onclick = () => {
                     mostrarOuOcultarMapaHistorico('SG_1930.jpg');
                 };
@@ -542,6 +762,7 @@
                 // showTourismListModal removed — lista de turismo foi eliminada do menu
 
 
+
                 // Adiciona marcadores das lendas
                 const lendaEntities = [];
                 // Estado do toggle de Lendas (botão no menu 'Todos')
@@ -657,6 +878,8 @@
                 // Atacha handler ao botão estático 'Marechais'
                 const marechaisBtnStatic = document.getElementById('marechais-btn');
                 if (marechaisBtnStatic) marechaisBtnStatic.onclick = () => { showMarechaisCarousel(); };
+                
+                // Inversão de sombras removida — sem alterações programáticas na luz da cena.
                 // Função para mostrar carrossel/infobox dos Marechais
                 function showMarechaisCarousel(startIndex = 0) {
                     if (!marechaisData || !marechaisData.length) return;
@@ -692,7 +915,7 @@
                         const foto = m.foto ? m.foto : 'placeholder_prefeito.jpg';
                         let zebra = '';
                         if (m.resumo) {
-                            let descParts = m.resumo.split(/<br\s*\/?>/);
+                            let descParts = m.resumo.split(/<br\s*\/?/);
                             zebra = descParts.map((part, i) => `<div style='background:${i % 2 === 0 ? BOX_BG : BOX_ALT};color:${BOX_FG};padding:4px 8px;border-radius:3px;margin-bottom:4px;'>${part}</div>`).join('');
                         }
                         if (m.observacao) {
@@ -967,22 +1190,13 @@
                 const osmTranslation = Cesium.Cartesian3.fromElements(0, 0, osmOffset, new Cesium.Cartesian3());
                 buildingsTileset.modelMatrix = Cesium.Matrix4.fromTranslation(osmTranslation);
                 viewer.scene.primitives.add(buildingsTileset);
-                // Garantir estado inicial: ocultar OSM (definimos explicitamente false aqui
-                // para evitar usar a variável antes de sua declaração)
-                buildingsTileset.show = false;
+                // Garantir estado inicial: mostrar OSM (esta variante inicia com OSM visível)
+                buildingsTileset.show = true;
 
                 // Botão para mostrar/ocultar OSM temporariamente
-                // Inicialmente mantemos as OSM ocultas (não mostrar sobre nossos GLBs)
-                let osmVisible = false;
+                // Inicialmente mantemos as OSM visíveis (não mostrar sobre nossos GLBs)
+                let osmVisible = true;
                 const activeGlbs = new Set(); // ids de prédios que atualmente exibem GLB (detalhe)
-                // Handler do botão toggle-osm-btn está temporariamente oculto na UI.
-                // Mantivemos a lógica abaixo comentada para referência futura (re-ativar se precisar obter elevação/coords):
-                /*
-                document.getElementById('toggle-osm-btn').onclick = function() {
-                    osmVisible = !osmVisible;
-                    updateTilesetShowForOSM(osmVisible);
-                };
-                */
 
                 // Adiciona GLBs lowpoly ao iniciar (inclusive monumentos), mantendo como padrão as OSM originais visíveis
                 // glbEntities[id] pode ser: Entity (low), Entity (detalhe único) ou Array<Entity> (detalhe multi-blocos)
@@ -995,24 +1209,22 @@
                         buildingsTileset.show = false;
                         return;
                     }
-                    // Mostrar tileset, mas ocultar elementos que possuem GLB ativo ou que
-                    // já têm um modelo low (uri_base) atualmente presente como entidade.
+
+                    // Mostrar tileset, exceto os elementos que possuem um modelo 'low' (uri_base)
                     buildingsTileset.show = true;
 
                     // Reunir lista de IDs cuja OSM deve ser ocultada:
                     // - todos os ids que têm uri_base (temos um modelo low para eles)
                     // - além dos activeGlbs (detalhes abertos)
                     const hideSet = new Set();
-                    // adiciona IDs que possuem uri_base (não queremos que o tileset OSM sobreponha nossos lows)
                     Object.keys(buildingsMap).forEach(id => {
                         const d = buildingsMap[id];
-                        if (d && d.uri_base) hideSet.add(id);
+                        if (d && d.uri_base) hideSet.add(String(id));
                     });
-                    // adiciona GLBs detalhados ativos (redundante em muitos casos, mas seguro)
-                    activeGlbs.forEach(id => hideSet.add(id));
+                    activeGlbs.forEach(id => hideSet.add(String(id)));
 
                     if (hideSet.size === 0) {
-                        // sem ids a esconder: mostra tudo
+                        // sem ids a esconder: mostra tudo (estilo padrão)
                         buildingsTileset.style = new Cesium.Cesium3DTileStyle({
                             show: true,
                             color: "color('white', 1)"
@@ -1020,15 +1232,27 @@
                         return;
                     }
 
-                    // Construir condições corretamente: cada condição é uma expressão que
-                    // compara ${elementId} com o id string e retorna false para ocultar.
-                    const conds = [];
+                    // Construir as condições para Cesium: cada condição é uma expressão string
+                    // que compara ${elementId} com o id do prédio e retorna false para esconder.
+                    const conditions = [];
                     hideSet.forEach(hid => {
-                        conds.push([`\${elementId} === '${hid}'`, false]);
+                        // Se o id for numérico (apenas dígitos), compare sem aspas para evitar
+                        // comparar número com string — caso contrário, compare como string.
+                        let expr;
+                        if (/^\d+$/.test(hid)) {
+                            // Ex.: "${elementId} === 123456"
+                            expr = "${elementId} === " + hid;
+                        } else {
+                            // Ex.: "${elementId} === 'abc-123'"
+                            expr = "${elementId} === '" + hid + "'";
+                        }
+                        conditions.push([expr, false]);
                     });
-                    conds.push([true, true]);
+                    // regra final: se nenhuma condição anterior for verdadeira, mostrar
+                    conditions.push([true, true]);
+
                     buildingsTileset.style = new Cesium.Cesium3DTileStyle({
-                        show: { conditions: conds }
+                        show: { conditions: conditions }
                     });
                 }
                 function addLowModel(id) {
@@ -1127,6 +1351,20 @@
                     if (id === '999999999') return;
                     addLowModel(id);
                 });
+
+                // Após criar os lows, aplica a lógica de mostrar/ocultar OSM conforme osmVisible
+                updateTilesetShowForOSM(osmVisible);
+
+                // Configura handler do botão toggle-osm agora que a função updateTilesetShowForOSM existe
+                const toggleOsmBtn = document.getElementById('toggle-osm-btn');
+                if (toggleOsmBtn) {
+                    toggleOsmBtn.onclick = function() {
+                        osmVisible = !osmVisible;
+                        updateTilesetShowForOSM(osmVisible);
+                        toggleOsmBtn.innerText = osmVisible ? 'Ocultar OSM' : 'Mostrar OSM';
+                    };
+                    toggleOsmBtn.innerText = osmVisible ? 'Ocultar OSM' : 'Mostrar OSM';
+                }
 
                 // Evento de clique para mostrar ID e coordenadas do prédio OSM
                 // Handler único para clique
