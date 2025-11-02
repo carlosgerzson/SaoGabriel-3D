@@ -451,9 +451,9 @@ Um dos destaques do prédio é a porta principal, talhada em madeira de cinamomo
         uri_base: 'museu_feb_low.glb',
         uri_detail: 'museu_feb.glb',
         info: {
-            title: 'HERÓIS DA FEB',
-            description: 'provisório - detalhados, contribuem para a identidade e a vivacidade do centro da cidade.',
-            images: ['monumento1.jpg']
+            title: 'MUSEU GAÚCHO DA FEB',
+            description: 'Museu dedicado à memória da participação gaúcha na Força Expedicionária Brasileira (FEB) na Segunda Guerra Mundial, com uniformes, objetos, documentos e painéis que preservam a história dos combatentes e a relação com a comunidade local.',
+            images: ['tour_feb.jpg']
         }
     },
     '474529581': { // Clube Caixeral
@@ -464,8 +464,32 @@ Um dos destaques do prédio é a porta principal, talhada em madeira de cinamomo
         uri_detail: 'caixeral.glb',
         info: {
             title: 'CLUBE CAIXERAL',
-            description: 'provisório - detalhados, contribuem para a identidade e a vivacidade do centro da cidade.',
-            images: ['monumento1.jpg']
+            description: `Fundado em 19 de maio de 1895 como União Caixeiral Gabrielense, o Clube Caixeiral foi um centro social importante em São Gabriel, conhecido por bailes, carnavais e noites de boate nas décadas de 1960–70. A reforma e ampliação do prédio explicam a escada central do salão: adicionaram-se janelas e o acesso acabou ficando no meio do salão. Hoje o clube integra a memória cultural e social da cidade.`,
+            images: ['caixeral.jpg']
+        }
+    },
+    '226820498': { // Rodoviária São Gabriel
+        elevationOffset: 0,
+        position: Cesium.Cartesian3.fromDegrees(-54.325346, -30.343651, 140),// 144.08
+        orientation: new Cesium.HeadingPitchRoll(Cesium.Math.toRadians(-43), Cesium.Math.toRadians(0), Cesium.Math.toRadians(0)),
+        uri_base: 'rodoviaria_low.glb',
+        uri_detail: 'rodoviaria.glb',
+        info: {
+            title: 'RODOVIÁRIA SÃO GABRIEL',
+            description: `A Rodoviária de São Gabriel foi construída em 1972, na gestão do Dr. Alfredo Bento Pereira Filho. Desde então serve como o principal terminal rodoviário da cidade, conectando São Gabriel a municípios vizinhos e concentrando serviços de transporte e comércio no entorno.`,
+            images: ['rodoviaria.jpg']
+        }
+    },
+    '437396075': { // Vila Eulália
+        elevationOffset: 0,
+        position: Cesium.Cartesian3.fromDegrees(-54.314821, -30.338520, 133),// 144.08
+        orientation: new Cesium.HeadingPitchRoll(Cesium.Math.toRadians(112), Cesium.Math.toRadians(0), Cesium.Math.toRadians(0)),
+        uri_base: 'vila_eulalia_low.glb',
+        uri_detail: 'vila_eulalia.glb',
+        info: {
+            title: 'VILA EULÁLIA',
+            description: 'Conjunto residencial histórico conhecido como Vila Eulália, que preserva exemplos da habitação popular e a memória coletiva do bairro central.',
+            images: ['vila_eulalia.jpg']
         }
     },
     '111111111': { // Heróis da FEB

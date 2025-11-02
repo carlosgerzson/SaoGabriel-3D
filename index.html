@@ -111,16 +111,7 @@
                     <input id="urban-alpha" type="range" min="0" max="1" step="0.01" value="1" style="flex:1;" />
                     <span id="urban-alpha-val" style="width:34px;text-align:right;">1.00</span>
                 </div>
-                <div style="display:flex;gap:8px;align-items:center;font-size:12px;color:#ddd;">
-                    <label for="urban-bright" style="min-width:64px;">Brilho</label>
-                    <input id="urban-bright" type="range" min="0.4" max="1.4" step="0.01" value="0.90" style="flex:1;" />
-                    <span id="urban-bright-val" style="width:34px;text-align:right;">0.90</span>
-                </div>
-                <div style="display:flex;gap:8px;align-items:center;font-size:12px;color:#ddd;">
-                    <label for="urban-contrast" style="min-width:64px;">Contraste</label>
-                    <input id="urban-contrast" type="range" min="0.6" max="1.6" step="0.01" value="1.00" style="flex:1;" />
-                    <span id="urban-contrast-val" style="width:34px;text-align:right;">1.00</span>
-                </div>
+                <!-- Brilho e Contraste removidos para simplificar painel em dispositivos pequenos -->
                 <div style="display:flex;gap:8px;align-items:center;font-size:12px;color:#ddd;">
                     <label for="urban-sat" style="min-width:64px;">Saturação</label>
                     <input id="urban-sat" type="range" min="0" max="2.0" step="0.01" value="0.88" style="flex:1;" />
@@ -334,8 +325,6 @@
                 let urbanProviderStyle = 'osm'; // pode ser: osm | maptiler
                 const urbanStyle = {
                     alpha: 1.0,
-                    brightness: 0.90,
-                    contrast: 1.00,
                     saturation: 0.88,
                     hue: 0.0
                 };
@@ -382,8 +371,6 @@
                     if (!layer) return;
                     try {
                         if (typeof style.alpha === 'number') layer.alpha = Number(style.alpha);
-                        if (typeof style.brightness === 'number') layer.brightness = Number(style.brightness);
-                        if (typeof style.contrast === 'number') layer.contrast = Number(style.contrast);
                         if (typeof style.saturation === 'number') layer.saturation = Number(style.saturation);
                         if (typeof style.hue === 'number') layer.hue = Number(style.hue);
                     } catch (e) {
@@ -394,18 +381,12 @@
                 // Atualiza os controles UI para refletir valores atuais
                 function updateUrbanControlsUI() {
                     const a = document.getElementById('urban-alpha');
-                    const b = document.getElementById('urban-bright');
-                    const c = document.getElementById('urban-contrast');
                     const s = document.getElementById('urban-sat');
                     const h = document.getElementById('urban-hue');
                     if (a) { a.value = String(urbanStyle.alpha); }
-                    if (b) { b.value = String(urbanStyle.brightness); }
-                    if (c) { c.value = String(urbanStyle.contrast); }
                     if (s) { s.value = String(urbanStyle.saturation); }
                     if (h) { h.value = String(urbanStyle.hue); }
                     const av = document.getElementById('urban-alpha-val'); if (av) av.textContent = Number(urbanStyle.alpha).toFixed(2);
-                    const bv = document.getElementById('urban-bright-val'); if (bv) bv.textContent = Number(urbanStyle.brightness).toFixed(2);
-                    const cv = document.getElementById('urban-contrast-val'); if (cv) cv.textContent = Number(urbanStyle.contrast).toFixed(2);
                     const sv = document.getElementById('urban-sat-val'); if (sv) sv.textContent = Number(urbanStyle.saturation).toFixed(2);
                     const hv = document.getElementById('urban-hue-val'); if (hv) hv.textContent = Number(urbanStyle.hue).toFixed(2);
                 }
@@ -413,13 +394,9 @@
                 // Liga os eventos dos sliders e botões de preset
                 function bindUrbanStyleControls() {
                     const a = document.getElementById('urban-alpha');
-                    const b = document.getElementById('urban-bright');
-                    const c = document.getElementById('urban-contrast');
                     const s = document.getElementById('urban-sat');
                     const h = document.getElementById('urban-hue');
                     if (a) a.oninput = function () { urbanStyle.alpha = Number(this.value); applyUrbanStyleToLayer(urbanImageryLayer, urbanStyle); updateUrbanControlsUI(); };
-                    if (b) b.oninput = function () { urbanStyle.brightness = Number(this.value); applyUrbanStyleToLayer(urbanImageryLayer, urbanStyle); updateUrbanControlsUI(); };
-                    if (c) c.oninput = function () { urbanStyle.contrast = Number(this.value); applyUrbanStyleToLayer(urbanImageryLayer, urbanStyle); updateUrbanControlsUI(); };
                     if (s) s.oninput = function () { urbanStyle.saturation = Number(this.value); applyUrbanStyleToLayer(urbanImageryLayer, urbanStyle); updateUrbanControlsUI(); };
                     if (h) h.oninput = function () { urbanStyle.hue = Number(this.value); applyUrbanStyleToLayer(urbanImageryLayer, urbanStyle); updateUrbanControlsUI(); };
 
@@ -1243,6 +1220,28 @@
                 // Adiciona GLBs lowpoly ao iniciar (inclusive monumentos), mantendo como padrão as OSM originais visíveis
                 // glbEntities[id] pode ser: Entity (low), Entity (detalhe único) ou Array<Entity> (detalhe multi-blocos)
                 let glbEntities = {};
+
+                // --- Preview Laranja (aplicado por padrão a todos os LOWs) ---
+                const PREVIEW_ORANGE = Cesium.Color.fromCssColorString('#b45f00');
+
+                function setEntityTintSingle(ent, apply) {
+                    try {
+                        if (!ent || !ent.model) return;
+                        if (apply) {
+                            ent.model.color = PREVIEW_ORANGE;
+                            ent.model.colorBlendMode = Cesium.ColorBlendMode.REPLACE;
+                            ent.model.colorBlendAmount = 1.0;
+                        } else {
+                            // Reverter: limpa propriedades (volta ao comportamento padrão)
+                            try { ent.model.color = undefined; } catch (e) { }
+                            try { ent.model.colorBlendMode = undefined; } catch (e) { }
+                            try { ent.model.colorBlendAmount = undefined; } catch (e) { }
+                        }
+                    } catch (e) {
+                        console.warn('Falha ao aplicar tint no entity', ent && ent.id, e);
+                    }
+                }
+                // Nota: não temos botão; os LOWs recebem tint por padrão quando criados.
                 // Helper para atualizar o estilo do tileset conforme osmVisible e quais GLBs estão ativos
                 function updateTilesetShowForOSM(osmOn) {
                     if (!buildingsTileset) return;
@@ -1319,6 +1318,9 @@
                         }
                     });
                     glbEntities[id] = ent; // referencia ao low
+                    console.debug('addLowModel', id, data.uri_base);
+                    // Aplicar tint laranja por padrão a todos os LOWs
+                    try { setEntityTintSingle(ent, true); } catch (e) { /* noop */ }
                     // Ao garantir o low, removemos id de activeGlbs (se estava)
                     if (activeGlbs.has(id)) {
                         activeGlbs.delete(id);
@@ -1349,7 +1351,8 @@
                                     shadows: Cesium.ShadowMode.ENABLED
                                 }
                             });
-                            parts.push(ent);
+                                parts.push(ent);
+                                console.debug('addDetailModel (part)', id, uri);
                         });
                         glbEntities[id] = parts; // array de partes
                         // marca como GLB ativo
@@ -1371,6 +1374,7 @@
                             }
                         });
                         glbEntities[id] = ent;
+                        console.debug('addDetailModel', id, data.uri_detail);
                         // marca como GLB ativo
                         activeGlbs.add(id);
                         updateTilesetShowForOSM(osmVisible);
