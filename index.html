@@ -397,14 +397,17 @@
                     const b = document.getElementById('urban-bright');
                     const c = document.getElementById('urban-contrast');
                     const s = document.getElementById('urban-sat');
+                    const h = document.getElementById('urban-hue');
                     if (a) { a.value = String(urbanStyle.alpha); }
                     if (b) { b.value = String(urbanStyle.brightness); }
                     if (c) { c.value = String(urbanStyle.contrast); }
                     if (s) { s.value = String(urbanStyle.saturation); }
+                    if (h) { h.value = String(urbanStyle.hue); }
                     const av = document.getElementById('urban-alpha-val'); if (av) av.textContent = Number(urbanStyle.alpha).toFixed(2);
                     const bv = document.getElementById('urban-bright-val'); if (bv) bv.textContent = Number(urbanStyle.brightness).toFixed(2);
                     const cv = document.getElementById('urban-contrast-val'); if (cv) cv.textContent = Number(urbanStyle.contrast).toFixed(2);
                     const sv = document.getElementById('urban-sat-val'); if (sv) sv.textContent = Number(urbanStyle.saturation).toFixed(2);
+                    const hv = document.getElementById('urban-hue-val'); if (hv) hv.textContent = Number(urbanStyle.hue).toFixed(2);
                 }
 
                 // Liga os eventos dos sliders e botões de preset
@@ -413,10 +416,12 @@
                     const b = document.getElementById('urban-bright');
                     const c = document.getElementById('urban-contrast');
                     const s = document.getElementById('urban-sat');
+                    const h = document.getElementById('urban-hue');
                     if (a) a.oninput = function () { urbanStyle.alpha = Number(this.value); applyUrbanStyleToLayer(urbanImageryLayer, urbanStyle); updateUrbanControlsUI(); };
                     if (b) b.oninput = function () { urbanStyle.brightness = Number(this.value); applyUrbanStyleToLayer(urbanImageryLayer, urbanStyle); updateUrbanControlsUI(); };
                     if (c) c.oninput = function () { urbanStyle.contrast = Number(this.value); applyUrbanStyleToLayer(urbanImageryLayer, urbanStyle); updateUrbanControlsUI(); };
                     if (s) s.oninput = function () { urbanStyle.saturation = Number(this.value); applyUrbanStyleToLayer(urbanImageryLayer, urbanStyle); updateUrbanControlsUI(); };
+                    if (h) h.oninput = function () { urbanStyle.hue = Number(this.value); applyUrbanStyleToLayer(urbanImageryLayer, urbanStyle); updateUrbanControlsUI(); };
 
                     // Presets e botão Restaurar removidos — mantemos apenas sliders.
                 }
@@ -457,6 +462,43 @@
                         if (urbanBaseActive) setUrbanBase(urbanProviderStyle);
                     };
                 }
+
+                // Garantir que a camada urbana inicial use o provider desejado (padrão: 'osm')
+                // Isso substitui a camada Carto criada anteriormente no carregamento, sem remover
+                // o código Carto do projeto — apenas recria o layer usando o provider selecionado.
+                try {
+                    setUrbanBase(urbanProviderStyle);
+                } catch (e) {
+                    console.warn('Falha ao aplicar base urbana inicial:', e);
+                }
+
+                // Se o controle de hue não estiver presente no HTML, criá-lo dinamicamente
+                function ensureHueControlExists() {
+                    try {
+                        if (document.getElementById('urban-hue')) return; // já existe
+                        const container = document.getElementById('urban-controls') || document.getElementById('left-controls') || document.body;
+                        const wrapper = document.createElement('div');
+                        wrapper.style.marginTop = '6px';
+                        wrapper.innerHTML = `
+                            <label style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#ddd;">
+                                <span>Hue</span>
+                                <span id="urban-hue-val">${Number(urbanStyle.hue).toFixed(2)}</span>
+                            </label>
+                            <input id="urban-hue" type="range" min="-1.0" max="1.0" step="0.01" value="${urbanStyle.hue}" style="width:100%;">
+                        `;
+                        // Tenta inserir próximo ao controle de alpha se existir
+                        const alphaEl = document.getElementById('urban-alpha');
+                        if (alphaEl && alphaEl.parentNode) {
+                            alphaEl.parentNode.insertAdjacentElement('afterend', wrapper);
+                        } else {
+                            container.appendChild(wrapper);
+                        }
+                    } catch (e) {
+                        console.warn('Falha ao criar controle de Hue dinamicamente:', e);
+                    }
+                }
+
+                ensureHueControlExists();
 
                 // Bind initial
                 bindUrbanStyleControls();
