@@ -198,7 +198,24 @@
             const BOX_ALT = '#292929';
             const BTN_BG = '#444';
             // ...existing code...
-            try {
+                try {
+                // Defina seu access token do Cesium Ion aqui (substitua o placeholder abaixo)
+                // Você pode também salvar o token em localStorage com a chave 'cesiumIonToken'
+                // Ex: localStorage.setItem('cesiumIonToken', 'SEU_TOKEN_AQUI');
+                try {
+                    const _savedIon = localStorage.getItem('cesiumIonToken');
+                    if (_savedIon) {
+                        Cesium.Ion.defaultAccessToken = _savedIon;
+                        console.debug('[DEBUG] Cesium Ion token carregado de localStorage.');
+                    } else {
+                        // token inserido pelo usuário
+                        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI5NmUwYzg1Zi1lMGI3LTQ4ZmYtYTI4MC04ZjQyYmYwY2Y2NjgiLCJpZCI6MTI5NjcwLCJpYXQiOjE3NTc4NjMzNTR9.ktheFtRHsrg2EOCenwduLGJWJyCKVfAD3q64qdlUzt8';
+                        console.debug('[DEBUG] Cesium Ion token aplicado a partir do código.');
+                    }
+                } catch (e) {
+                    console.warn('[WARN] Falha ao ler token Cesium Ion do localStorage', e);
+                }
+
                 // Inicializa o visualizador com Cesium World Terrain
                 viewer = new Cesium.Viewer('cesiumContainer', {
                     terrain: Cesium.Terrain.fromWorldTerrain(),
@@ -208,15 +225,20 @@
                     timelcnine: false,
                     baseLayerPicker: false,
                 });
+                // Debug: log inicial do viewer e camadas de imagery
+                try { console.debug('[DEBUG] Viewer criado. imageryLayers.length =', viewer && viewer.imageryLayers ? viewer.imageryLayers.length : 'undefined'); } catch (e) { console.warn('[DEBUG] Falha ao logar viewer inicial', e); }
 
                 // Referência para camada urbana adicionada (se alguma)
                 let urbanImageryLayer = null;
                 // Se não houver nenhuma imagery layer por padrão, criaremos um fallback OSM
                 function ensureFallbackImagery() {
                     try {
+                        console.debug('[DEBUG] ensureFallbackImagery: viewer.imageryLayers.length =', viewer && viewer.imageryLayers ? viewer.imageryLayers.length : 'undefined');
                         if (viewer.imageryLayers.length === 0) {
+                            console.debug('[DEBUG] ensureFallbackImagery: adicionando OSM fallback');
                             const osmFallback = new Cesium.OpenStreetMapImageryProvider({ url: 'https://a.tile.openstreetmap.org/' });
                             viewer.imageryLayers.addImageryProvider(osmFallback);
+                            console.debug('[DEBUG] ensureFallbackImagery: adicionado, nova length =', viewer.imageryLayers.length);
                         }
                     } catch (e) {
                         console.warn('Falha ao adicionar fallback OSM:', e);
@@ -332,6 +354,7 @@
                 // Cria um ImageryProvider conforme o estilo solicitado
                 function createUrbanProvider(styleName) {
                     try {
+                        console.debug('[DEBUG] createUrbanProvider(', styleName, ')');
                         switch (styleName) {
                             case 'carto-dark':
                                 return new Cesium.UrlTemplateImageryProvider({
@@ -406,6 +429,7 @@
                 // Quando criamos a camada urbana, aplicamos estilos e respeitamos o estilo selecionado
                 const originalSetUrbanBase = setUrbanBase;
                 setUrbanBase = function(selectedStyle) {
+                    console.debug('[DEBUG] setUrbanBase called. selectedStyle =', selectedStyle, 'current urbanProviderStyle =', urbanProviderStyle);
                     // permitimos setUrbanBase() sem argumento para manter compatibilidade
                     if (typeof selectedStyle === 'string') urbanProviderStyle = selectedStyle;
                     // remove camada antiga se existir
@@ -416,6 +440,7 @@
                     try {
                         const provider = createUrbanProvider(urbanProviderStyle);
                         urbanImageryLayer = viewer.imageryLayers.addImageryProvider(provider);
+                        console.debug('[DEBUG] setUrbanBase: urbanImageryLayer adicionado. imageryLayers.length =', viewer.imageryLayers.length, urbanImageryLayer);
                         urbanBaseActive = true;
                         const btn = document.getElementById('toggle-base-btn');
                         if (btn) btn.innerText = 'Ocultar Mapa Urbano';
@@ -445,6 +470,7 @@
                 // o código Carto do projeto — apenas recria o layer usando o provider selecionado.
                 try {
                     setUrbanBase(urbanProviderStyle);
+                    try { console.debug('[DEBUG] após setUrbanBase inicial. viewer.imageryLayers.length =', viewer && viewer.imageryLayers ? viewer.imageryLayers.length : 'undefined'); } catch (e) { }
                 } catch (e) {
                     console.warn('Falha ao aplicar base urbana inicial:', e);
                 }
@@ -1203,14 +1229,22 @@
                 }
 
                 // Adiciona OSM Buildings tileset (sempre antes do KML)
-                const buildingsTileset = await Cesium.createOsmBuildingsAsync();
-                // Offset vertical em metros (ajuste conforme necessário)
-                const osmOffset = 0;
-                const osmTranslation = Cesium.Cartesian3.fromElements(0, 0, osmOffset, new Cesium.Cartesian3());
-                buildingsTileset.modelMatrix = Cesium.Matrix4.fromTranslation(osmTranslation);
-                viewer.scene.primitives.add(buildingsTileset);
-                // Garantir estado inicial: mostrar OSM (esta variante inicia com OSM visível)
-                buildingsTileset.show = true;
+                // Alguns ambientes não possuem token Cesium Ion válido — protegemos essa chamada
+                let buildingsTileset = null;
+                try {
+                    buildingsTileset = await Cesium.createOsmBuildingsAsync();
+                    // Offset vertical em metros (ajuste conforme necessário)
+                    const osmOffset = 0;
+                    const osmTranslation = Cesium.Cartesian3.fromElements(0, 0, osmOffset, new Cesium.Cartesian3());
+                    buildingsTileset.modelMatrix = Cesium.Matrix4.fromTranslation(osmTranslation);
+                    viewer.scene.primitives.add(buildingsTileset);
+                    // Garantir estado inicial: mostrar OSM (esta variante inicia com OSM visível)
+                    buildingsTileset.show = true;
+                } catch (e) {
+                    // Falha ao carregar tileset pode ser devido a token Cesium Ion inválido (401)
+                    console.warn('[WARN] Falha ao carregar OSM buildings tileset (Cesium Ion). Continuando sem tileset.', e);
+                    buildingsTileset = null;
+                }
 
                 // Botão para mostrar/ocultar OSM temporariamente
                 // Inicialmente mantemos as OSM visíveis (não mostrar sobre nossos GLBs)
@@ -1318,7 +1352,6 @@
                         }
                     });
                     glbEntities[id] = ent; // referencia ao low
-                    console.debug('addLowModel', id, data.uri_base);
                     // Aplicar tint laranja por padrão a todos os LOWs
                     try { setEntityTintSingle(ent, true); } catch (e) { /* noop */ }
                     // Ao garantir o low, removemos id de activeGlbs (se estava)
