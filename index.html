@@ -1631,26 +1631,43 @@
                     if (data.uri_base && data.uri_detail) {
                         extraBtn = `<button id='back-to-low' style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>Voltar ao modelo simplificado</button> `;
                     }
-                    let carousel = '';
-                    if (data.info.images && data.info.images.length > 0) {
-                        if (data.info.images.length === 1) {
-                            carousel = `<div style="text-align:center;"><img id="carousel-img-glb" src="${data.info.images[0]}" class="img-building" /></div>`;
-                        } else {
-                            carousel = `
-                            <div id="carousel-glb" style="text-align:center;">
-                                <img id="carousel-img-glb" src="${data.info.images[0]}" class="img-building" />
-                                <br>
-                                <button id="prev-img-glb" style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>◀</button>
-                                <span id="img-indicator-glb" style='color:${BOX_FG};'>1/${data.info.images.length}</span>
-                                <button id="next-img-glb" style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>▶</button>
+
+                    // Monta área de mídia: prefer GLB rotativo (model-viewer) se uri_detail for GLB,
+                    // caso contrário usa carousel de imagens ou GIF/JPG padrão.
+                    let mediaHtml = '';
+                    const detailUris = (data.uri_detail && (Array.isArray(data.uri_detail) ? data.uri_detail : [data.uri_detail])) || [];
+                    const firstDetail = detailUris.length > 0 ? detailUris[0] : null;
+                    const isGlbDetail = firstDetail && typeof firstDetail === 'string' && firstDetail.toLowerCase().endsWith('.glb');
+
+                    if (isGlbDetail) {
+                        // model-viewer: mostra primeiro detalhe e adiciona controles prev/next se houver múltiplos
+                        mediaHtml = `
+                            <div id="mv-wrap-${id}" style="text-align:center;">
+                                <model-viewer id="model-viewer-${id}" src="${firstDetail}" alt="${data.info.title}" auto-rotate camera-controls style="width:100%;height:260px;max-height:40vh; background: transparent; display:block; margin:0 auto;"> </model-viewer>
+                                ${detailUris.length > 1 ? (`<div style="margin-top:6px;display:flex;gap:8px;justify-content:center;align-items:center;"><button id="prev-glb-${id}" style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 8px;cursor:pointer;'>◀</button> <span id="glb-indicator-${id}" style='color:${BOX_FG};'>1/${detailUris.length}</span> <button id="next-glb-${id}" style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 8px;cursor:pointer;'>▶</button> <button id="join-glb-${id}" style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 8px;cursor:pointer;'>Mostrar juntas</button></div>`) : ''}
                             </div>`;
+                    } else if (data.info.images && data.info.images.length > 0) {
+                        if (data.info.images.length === 1) {
+                            mediaHtml = `<div style="text-align:center;"><img id="carousel-img-glb" src="${data.info.images[0]}" class="img-building" style="max-width:100%;height:auto;border-radius:6px;" /></div>`;
+                        } else {
+                            mediaHtml = `
+                                <div id="carousel-glb" style="text-align:center;">
+                                    <img id="carousel-img-glb" src="${data.info.images[0]}" class="img-building" style="max-width:100%;height:auto;border-radius:6px;" />
+                                    <br>
+                                    <button id="prev-img-glb" style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>◀</button>
+                                    <span id="img-indicator-glb" style='color:${BOX_FG};'>1/${data.info.images.length}</span>
+                                    <button id="next-img-glb" style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>▶</button>
+                                </div>`;
                         }
+                    } else {
+                        // fallback vazio/placeholder
+                        mediaHtml = `<div style="text-align:center;"><img id="carousel-img-glb" src="placeholder_building.jpg" class="img-building" style="max-width:100%;height:auto;border-radius:6px;" /></div>`;
                     }
                     box.innerHTML = `
                         <div style='text-align:center;color:#fff;position:relative;min-height:120px;'>
                             <div style='font-size:20px;font-weight:bold;margin-bottom:8px;color:#fff;'>${data.info.title}</div>
                             <br>
-                            ${carousel}
+                            ${mediaHtml}
                             <div style='margin-top:12px;text-align:left;font-size:15px;'>${zebraDesc}</div>
                             <div style='height:48px;'></div>
                             <div style='position:sticky;bottom:0;left:0;width:100%;background:'+BOX_ALT+';padding-top:8px;padding-bottom:8px;z-index:2;display:flex;gap:8px;justify-content:center;box-shadow:0 -2px 8px #000a;'>
@@ -1662,20 +1679,106 @@
                         if (box.parentNode) box.parentNode.removeChild(box);
                     };
                     // Carrossel de imagens GLB
-                    if (data.info.images && data.info.images.length > 1) {
+                    // IMPORTANTE: quando estamos mostrando GLB rotativo (model-viewer)
+                    // o HTML do carousel (ids como 'carousel-img-glb') não é inserido.
+                    // Evita tentar acessar elementos nulos verificando se não estamos no
+                    // fluxo do model-viewer e se os elementos existem.
+                    if (!isGlbDetail && data.info.images && data.info.images.length > 1) {
                         let idxImg = 0;
                         const imgEl = document.getElementById('carousel-img-glb');
                         const indicator = document.getElementById('img-indicator-glb');
-                        document.getElementById('prev-img-glb').onclick = () => {
-                            idxImg = (idxImg - 1 + data.info.images.length) % data.info.images.length;
-                            imgEl.src = data.info.images[idxImg];
-                            indicator.textContent = `${idxImg + 1}/${data.info.images.length}`;
-                        };
-                        document.getElementById('next-img-glb').onclick = () => {
-                            idxImg = (idxImg + 1) % data.info.images.length;
-                            imgEl.src = data.info.images[idxImg];
-                            indicator.textContent = `${idxImg + 1}/${data.info.images.length}`;
-                        };
+                        const prevBtn = document.getElementById('prev-img-glb');
+                        const nextBtn = document.getElementById('next-img-glb');
+                        if (imgEl && indicator && prevBtn && nextBtn) {
+                            prevBtn.onclick = () => {
+                                idxImg = (idxImg - 1 + data.info.images.length) % data.info.images.length;
+                                imgEl.src = data.info.images[idxImg];
+                                indicator.textContent = `${idxImg + 1}/${data.info.images.length}`;
+                            };
+                            nextBtn.onclick = () => {
+                                idxImg = (idxImg + 1) % data.info.images.length;
+                                imgEl.src = data.info.images[idxImg];
+                                indicator.textContent = `${idxImg + 1}/${data.info.images.length}`;
+                            };
+                        }
+                    }
+                    // Inicializa model-viewer se estamos mostrando GLB rotativo
+                    if (isGlbDetail) {
+                        // Se houver múltiplos .glb, exibimos direto o viewer combinado (Three.js)
+                        // em vez do model-viewer/carrossel — evita mostrar "pedaços" separados.
+                        if (detailUris.length > 1) {
+                            // cria container temporário dentro do infobox para o viewer combinado
+                            const wrap = document.getElementById(`mv-wrap-${id}`);
+                            if (wrap) {
+                                // evita criar múltiplos viewers
+                                if (!document.getElementById(`combined-viewer-${id}`)) {
+                                    // feedback imediato
+                                    wrap.innerHTML = '';
+                                    const msg = document.createElement('div');
+                                    msg.id = `combined-viewer-${id}`;
+                                    msg.style.width = '100%';
+                                    msg.style.height = '320px';
+                                    msg.style.maxHeight = '44vh';
+                                    msg.style.background = 'transparent';
+                                    msg.style.display = 'block';
+                                    msg.style.marginTop = '8px';
+                                    msg.innerHTML = `<div style="color:#ddd;font-size:13px;padding:8px;text-align:center;">Carregando visualização conjunta...<br><small style='color:#bbb;'>(ver console para CORS/erros)</small></div>`;
+                                    wrap.appendChild(msg);
+                                    ensureThreeJS().then(mods => {
+                                        try {
+                                            createCombinedViewer(mods, detailUris, msg, id);
+                                        } catch (e) {
+                                            console.warn('Falha ao criar viewer combinado', e);
+                                            msg.innerHTML = '<div style="color:#fdd;">Falha ao criar visualização combinada (ver console).</div>';
+                                        }
+                                    }).catch(err => {
+                                        console.warn('Falha ao carregar Three.js:', err);
+                                        msg.innerHTML = '<div style="color:#fdd;">Falha ao carregar dependências 3D (ver console).</div>';
+                                    });
+                                }
+                            }
+                        } else {
+                            // único GLB: usa model-viewer como antes (lazy-load)
+                            function ensureModelViewer(cb) {
+                                try {
+                                    if (window.customElements && customElements.get && customElements.get('model-viewer')) {
+                                        cb();
+                                        return;
+                                    }
+                                } catch (e) { /* ignore */ }
+                                const s = document.createElement('script');
+                                s.type = 'module';
+                                s.src = 'https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js';
+                                s.onload = cb;
+                                s.onerror = cb;
+                                document.head.appendChild(s);
+                            }
+                            ensureModelViewer(() => {
+                                try {
+                                    const mv = document.getElementById(`model-viewer-${id}`);
+                                    if (!mv) return;
+                                    let mvIdx = 0;
+                                    const updateIndicator = () => {
+                                        const ind = document.getElementById(`glb-indicator-${id}`);
+                                        if (ind) ind.textContent = `${mvIdx + 1}/${detailUris.length}`;
+                                    };
+                                    if (detailUris.length > 1) {
+                                        const prevBtn = document.getElementById(`prev-glb-${id}`);
+                                        const nextBtn = document.getElementById(`next-glb-${id}`);
+                                        if (prevBtn) prevBtn.onclick = () => {
+                                            mvIdx = (mvIdx - 1 + detailUris.length) % detailUris.length;
+                                            mv.setAttribute('src', detailUris[mvIdx]);
+                                            updateIndicator();
+                                        };
+                                        if (nextBtn) nextBtn.onclick = () => {
+                                            mvIdx = (mvIdx + 1) % detailUris.length;
+                                            mv.setAttribute('src', detailUris[mvIdx]);
+                                            updateIndicator();
+                                        };
+                                    }
+                                } catch (e) { console.warn('model-viewer init failed', e); }
+                            });
+                        }
                     }
                     if (data.uri_base && data.uri_detail) {
                         document.getElementById('back-to-low').onclick = () => {
@@ -1704,6 +1807,179 @@
                         box.style.opacity = '1';
                         box.style.display = 'block';
                     }, 10);
+                }
+
+                // --- Support functions: lazy-load Three.js and create combined viewer ---
+                // Retorna Promise que resolve com os módulos {THREE, GLTFLoader, OrbitControls}
+                function ensureThreeJS() {
+                    // Cache global para não recarregar scripts
+                    if (window.__three_mods) return Promise.resolve(window.__three_mods);
+
+                    // Tenta primeiro carregar via CDN que reescreve imports (Skypack) — ESM
+                    const trySkypack = () => {
+                        console.debug('[DEBUG] ensureThreeJS: tentando carregar via Skypack (ESM)');
+                        // skypack fornece módulos reescritos para navegadores
+                        return import('https://cdn.skypack.dev/three@0.152.2').then(THREEmod => {
+                            const THREE = THREEmod && (THREEmod.default || THREEmod.THREE || THREEmod);
+                            return Promise.all([
+                                Promise.resolve(THREE),
+                                import('https://cdn.skypack.dev/three@0.152.2/examples/jsm/loaders/GLTFLoader').catch(e => { console.warn('GLTFLoader import failed via skypack', e); return null; }),
+                                import('https://cdn.skypack.dev/three@0.152.2/examples/jsm/controls/OrbitControls').catch(e => { console.warn('OrbitControls import failed via skypack', e); return null; })
+                            ]).then(([THREEok, GLTFmod, OrbitMod]) => {
+                                // if essential pieces missing, reject to allow fallback
+                                if (!THREEok || !GLTFmod || !OrbitMod) {
+                                    return Promise.reject(new Error('Skypack did not provide required modules'));
+                                }
+                                const mods = { THREE: THREEok, GLTFLoader: (GLTFmod && (GLTFmod.GLTFLoader || GLTFmod.default)) || null, OrbitControls: (OrbitMod && (OrbitMod.OrbitControls || OrbitMod.default)) || null };
+                                window.__three_mods = mods;
+                                return mods;
+                            });
+                        });
+                    };
+
+                    // Fallback para UMD (scripts não-modulares) se Skypack falhar
+                    const fallbackUmd = () => {
+                        console.debug('[DEBUG] ensureThreeJS: fallback UMD loader');
+                        return new Promise((resolve, reject) => {
+                            if (window.THREE) {
+                                window.__three_mods = { THREE: window.THREE, GLTFLoader: window.THREE.GLTFLoader, OrbitControls: window.THREE.OrbitControls };
+                                resolve(window.__three_mods);
+                                return;
+                            }
+                            function loadScript(src, onload, onerror) {
+                                const s = document.createElement('script');
+                                s.src = src;
+                                s.onload = onload;
+                                s.onerror = onerror;
+                                document.head.appendChild(s);
+                            }
+                            const threeUrl = 'https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js';
+                            const gltfUrl = 'https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/loaders/GLTFLoader.js';
+                            const orbitUrl = 'https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/OrbitControls.js';
+                            loadScript(threeUrl, () => {
+                                setTimeout(() => {
+                                    if (!window.THREE) { reject(new Error('Three.js failed to attach to window.THREE')); return; }
+                                    loadScript(gltfUrl, () => {
+                                        loadScript(orbitUrl, () => {
+                                            window.__three_mods = { THREE: window.THREE, GLTFLoader: window.THREE.GLTFLoader || window.GLTFLoader, OrbitControls: window.THREE.OrbitControls || window.OrbitControls };
+                                            resolve(window.__three_mods);
+                                        }, () => { console.warn('OrbitControls load error'); resolve(window.__three_mods); });
+                                    }, () => { console.warn('GLTFLoader load error'); resolve(window.__three_mods); });
+                                }, 10);
+                            }, (e) => { reject(new Error('Failed to load Three.js: ' + e)); });
+                        });
+                    };
+
+                    // Executa tentativa ESM; se falhar, usa fallback UMD
+                    return trySkypack().catch(err => {
+                        console.warn('[WARN] Skypack import failed, usando fallback UMD', err);
+                        return fallbackUmd();
+                    });
+                }
+
+                // Cria um viewer combinado que carrega várias GLBs e as adiciona a uma cena única
+                function createCombinedViewer(mods, uris, hostElement, id) {
+                    const THREE = mods.THREE;
+                    const GLTFLoader = mods.GLTFLoader;
+                    const OrbitControls = mods.OrbitControls;
+
+                    // Elemento canvas/renderer
+                    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                    renderer.setPixelRatio(window.devicePixelRatio || 1);
+                    renderer.setSize(hostElement.clientWidth, hostElement.clientHeight, false);
+                    renderer.domElement.style.width = '100%';
+                    renderer.domElement.style.height = '100%';
+                    hostElement.appendChild(renderer.domElement);
+
+                    const scene = new THREE.Scene();
+                    const camera = new THREE.PerspectiveCamera(45, hostElement.clientWidth / hostElement.clientHeight, 0.1, 10000);
+                    camera.position.set(0, 2, 6);
+
+                    const ambient = new THREE.AmbientLight(0xffffff, 0.9);
+                    scene.add(ambient);
+                    const dir = new THREE.DirectionalLight(0xffffff, 0.6);
+                    dir.position.set(10, 10, 10);
+                    scene.add(dir);
+
+                    const group = new THREE.Group();
+                    scene.add(group);
+
+                    // Resolve GLTFLoader constructor from various possible sources (ESM module, UMD global)
+                    let GLTFLoaderCtor = null;
+                    if (mods && mods.GLTFLoader) GLTFLoaderCtor = mods.GLTFLoader;
+                    if (!GLTFLoaderCtor && mods && mods.THREE && mods.THREE.GLTFLoader) GLTFLoaderCtor = mods.THREE.GLTFLoader;
+                    if (!GLTFLoaderCtor && window && window.GLTFLoader) GLTFLoaderCtor = window.GLTFLoader;
+                    if (!GLTFLoaderCtor && window && window.THREE && window.THREE.GLTFLoader) GLTFLoaderCtor = window.THREE.GLTFLoader;
+                    if (!GLTFLoaderCtor) {
+                        const err = new Error('GLTFLoader not available');
+                        console.warn('createCombinedViewer:', err);
+                        throw err;
+                    }
+                    const loader = new GLTFLoaderCtor();
+                    const loadPromises = uris.map(uri => new Promise((resolve, reject) => {
+                        loader.load(uri, gltf => resolve(gltf.scene), undefined, err => reject(err));
+                    }));
+
+                    let controls = new OrbitControls(camera, renderer.domElement);
+                    controls.enableDamping = true;
+                    controls.dampingFactor = 0.06;
+                    controls.autoRotate = true;
+                    controls.autoRotateSpeed = 1.0;
+
+                    let rafId = null;
+
+                    Promise.all(loadPromises).then(objects => {
+                        objects.forEach(obj => {
+                            group.add(obj);
+                        });
+                        // Ajusta escala/centralização automática
+                        const bbox = new THREE.Box3().setFromObject(group);
+                        const size = bbox.getSize(new THREE.Vector3());
+                        const center = bbox.getCenter(new THREE.Vector3());
+                        const maxDim = Math.max(size.x, size.y, size.z);
+                        if (maxDim > 0) {
+                            const fitDistance = maxDim * 1.8;
+                            camera.position.set(center.x, center.y + maxDim * 0.3, center.z + fitDistance);
+                            camera.lookAt(center);
+                            controls.target.copy(center);
+                        }
+                        // Render loop
+                        function animate() {
+                            controls.update();
+                            renderer.render(scene, camera);
+                            rafId = requestAnimationFrame(animate);
+                        }
+                        animate();
+                    }).catch(err => {
+                        console.warn('Erro ao carregar GLBs combinados:', err);
+                        hostElement.innerHTML = '<div style="color:#fdd;">Erro ao carregar arquivos 3D (ver console para detalhes).</div>';
+                    });
+
+                    // Recalcula tamanho se host mudar
+                    function onResize() {
+                        const w = hostElement.clientWidth;
+                        const h = hostElement.clientHeight;
+                        camera.aspect = w / h;
+                        camera.updateProjectionMatrix();
+                        renderer.setSize(w, h, false);
+                    }
+                    window.addEventListener('resize', onResize);
+
+                    // Quando o infobox for fechado, garantimos cleanup removendo o renderer
+                    const closeHandler = function() {
+                        // procura se infobox ainda existe
+                        const inf = document.getElementById('infobox');
+                        if (!inf || !inf.parentNode) {
+                            // infobox removido: faz cleanup
+                            try { cancelAnimationFrame(rafId); } catch (e) { }
+                            try { renderer.dispose && renderer.dispose(); } catch (e) { }
+                            try { hostElement.parentNode && hostElement.parentNode.removeChild(hostElement); } catch (e) { }
+                            window.removeEventListener('resize', onResize);
+                            window.removeEventListener('click', closeHandler);
+                        }
+                    };
+                    // adiciona listener genérico — será acionado quando usuário fechar a infobox (remove do DOM)
+                    window.addEventListener('click', closeHandler);
                 }
 
                 function toggleOsmAndGlb(id) {
