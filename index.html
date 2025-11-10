@@ -90,12 +90,12 @@
 
     <!-- Painel lateral agrupando os botões de controle -->
     <div id="left-panel" style="position:fixed;top:45px;left:5px;z-index:2;display:flex;flex-direction:column;gap:8px;">
-        <!-- Botão 'Todos' controla a visibilidade dos controles abaixo -->
+        <!-- Botão 'Menu' controla a visibilidade dos controles abaixo (rótulos simplificados) -->
         <button id="todos-btn" aria-expanded="true"
-            style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;font-weight:600;">Todos ▾</button>
+            style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;font-weight:600;">Menu ▾</button>
         <div id="left-controls" style="display:flex;flex-direction:column;gap:8px;overflow:hidden;transition:max-height 0.28s ease;">
-            <button id="toggle-osm-btn" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Ocultar OSM</button>
-            <button id="toggle-base-btn" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Mapa Urbano</button>
+            <button id="toggle-osm-btn" aria-pressed="true" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Polígonos</button>
+            <button id="toggle-base-btn" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Satélite/Urbano</button>
             <!-- Controles visuais para o Mapa Urbano: escolha do basemap + ajustes -->
             <div id="urban-style-panel" style="background:rgba(0,0,0,0.45);padding:8px;border-radius:6px;border:1px solid rgba(200,200,200,0.06);display:flex;flex-direction:column;gap:6px;">
                 <div style="font-size:12px;color:#ddd;font-weight:600;">Ajuste visual (Mapa Urbano)</div>
@@ -130,7 +130,7 @@
         </div>
     </div>
     <!-- Botão fixo de boas-vindas -->
-    <button id="welcome-btn" style="position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:100;background:#333;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">Bem Vindo</button>
+    <button id="welcome-btn" style="position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:100;background:#333;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">🏛️ São Gabriel 3D</button>
 
 
     <script type="module">
@@ -296,7 +296,8 @@
                         urbanBaseActive = true;
                         const btn = document.getElementById('toggle-base-btn');
                         if (btn) {
-                            btn.innerText = 'Ocultar Mapa Urbano';
+                            // usa rótulo simples e amigável
+                            btn.innerText = 'Satélite/Urbano';
                             btn.disabled = false;
                         }
                     } catch (e) {
@@ -316,7 +317,8 @@
                         urbanBaseActive = false;
                         const btn = document.getElementById('toggle-base-btn');
                         if (btn) {
-                            btn.innerText = 'Mostrar Mapa Urbano';
+                            // mantém rótulo simples
+                            btn.innerText = 'Satélite/Urbano';
                             btn.disabled = false;
                         }
                     } catch (e) {
@@ -443,7 +445,7 @@
                         console.debug('[DEBUG] setUrbanBase: urbanImageryLayer adicionado. imageryLayers.length =', viewer.imageryLayers.length, urbanImageryLayer);
                         urbanBaseActive = true;
                         const btn = document.getElementById('toggle-base-btn');
-                        if (btn) btn.innerText = 'Ocultar Mapa Urbano';
+                        if (btn) btn.innerText = 'Satélite/Urbano';
                         // aplica estilo atual ao novo layer
                         applyUrbanStyleToLayer(urbanImageryLayer, urbanStyle);
                         updateUrbanControlsUI();
@@ -526,7 +528,7 @@
                             ch.style.display = firstVisible ? 'none' : '';
                         });
                         todosBtn.setAttribute('aria-expanded', (!firstVisible).toString());
-                        todosBtn.innerText = firstVisible ? 'Todos ▸' : 'Todos ▾';
+                        todosBtn.innerText = firstVisible ? 'Menu ▸' : 'Menu ▾';
                     };
                 }
                 // Botão para refazer o zoom/voo inicial para a praça
@@ -585,20 +587,26 @@
                     box.style.fontFamily = 'sans-serif';
                     box.innerHTML = `
                         <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;'>
-                            <div style='font-size:18px;font-weight:700;color:#f5f5f5;'>Bem-vindo a São Gabriel</div>
+                            <div style='font-size:18px;font-weight:700;color:#f5f5f5;'>São Gabriel 3D</div>
                             <div style='display:flex;gap:8px;align-items:center;'>
-                                <a href='https://www.saogabriel.rs.gov.br/pagina/historia' target='_blank' style='font-size:12px;color:#9fd;text-decoration:underline;'>Fonte: Prefeitura</a>
                                 <button id='welcome-close' style='background:transparent;color:#f5f5f5;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;'>Fechar</button>
                             </div>
                         </div>
                         <div style='font-size:14px;color:#f5f5f5;line-height:1.4;'>
                             <div style='margin-bottom:12px;'>
-                                <b>1) Origem do nome da cidade</b>
-                                <p style='margin-top:6px;'>Quando se pronuncia o nome “São Gabriel” naturalmente atenta-se somente sobre o nome do município. O nome é uma homenagem ao Vice-Rei do Rio da Prata em 1800, Dom Gabriel. A primeira povoação foi fundada no Cerro do Batovi por Félix de Azara, e em 4 de abril de 1846 foi elevada a vila — data considerada a de emancipação.</p>
+                                <b>Sobre este aplicativo</b>
+                                <p style='margin-top:6px;'>O <b>São Gabriel 3D</b> é uma experiência interativa criada para contar a história da cidade em três dimensões. Reunimos conteúdos históricos, culturais e arquitetônicos por meio de modelos 3D, imagens e descrições para que você possa explorar o patrimônio de forma imersiva.</p>
+                            </div>
+                            <div style='margin-bottom:12px;'>
+                                <b>Objetivo</b>
+                                <p style='margin-top:6px;'>Nosso objetivo é reconstruir e documentar a história urbana de São Gabriel em 3D. Novos modelos e conteúdos serão adicionados periodicamente — acompanhe as atualizações. Sua participação (sugestões ou correções) ajuda a melhorar o acervo.</p>
                             </div>
                             <div>
-                                <b>2) Conheça melhor São Gabriel</b>
-                                <p style='margin-top:6px;'>A região combina paisagens de coxilhas e várzeas, com forte vocação pecuária e arrozicultura, e possui atrativos naturais como o conjunto de formações rochosas na Palma e pontos hidrográficos singulares no distrito do Batovi. A cidade tem tradição militar — 'Terra dos Marechais' — e forte relevância histórica e cultural.</p>
+                                <b>Como explorar</b>
+                                <ul style='margin-top:6px;margin-left:18px;line-height:1.3;'>
+                                    <li>Use o mapa e os controles à esquerda para localizar pontos de interesse.</li>
+                                    <li>Clique em prédios e monumentos para abrir infoboxes com imagens, modelos 3D e informações detalhadas.</li>
+                                </ul>
                             </div>
                         </div>
                     `;
@@ -1436,13 +1444,16 @@
 
                 // Configura handler do botão toggle-osm agora que a função updateTilesetShowForOSM existe
                 const toggleOsmBtn = document.getElementById('toggle-osm-btn');
-                if (toggleOsmBtn) {
+                    if (toggleOsmBtn) {
                     toggleOsmBtn.onclick = function() {
                         osmVisible = !osmVisible;
                         updateTilesetShowForOSM(osmVisible);
-                        toggleOsmBtn.innerText = osmVisible ? 'Ocultar OSM' : 'Mostrar OSM';
+                        // mantém rótulo simples e acessível; atualiza estado aria-pressed
+                        try { toggleOsmBtn.setAttribute('aria-pressed', String(!!osmVisible)); } catch (e) { }
                     };
-                    toggleOsmBtn.innerText = osmVisible ? 'Ocultar OSM' : 'Mostrar OSM';
+                    // rótulo fixo mais amigável para público leigo
+                    toggleOsmBtn.innerText = 'Polígonos';
+                    try { toggleOsmBtn.setAttribute('aria-pressed', String(!!osmVisible)); } catch (e) { }
                 }
 
                 // Evento de clique para mostrar ID e coordenadas do prédio OSM
