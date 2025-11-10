@@ -130,7 +130,8 @@
         </div>
     </div>
     <!-- Botão fixo de boas-vindas -->
-    <button id="welcome-btn" style="position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:100;background:#333;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">🏛️ São Gabriel 3D</button>
+    <!-- z-index reduzido para evitar sobrepor caixas tipo infobox; escondido em telas pequenas -->
+    <button id="welcome-btn" style="position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:40;background:#333;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">🏛️ São Gabriel 3D</button>
 
 
     <script type="module">
@@ -620,7 +621,11 @@
                     if (document.getElementById(styleId)) return;
                     const css = `
                             /* Regras específicas para telefones modernos (iPhone/Android) */
-                            @media (max-width: 420px) {
+                                        /* Garantir que o botão fixo de boas-vindas não cubra infoboxes no mobile */
+                                        #welcome-btn { z-index: 40; }
+                                        @media (max-width: 420px) {
+                                            /* esconder o botão fixo em telas pequenas para não cobrir títulos/infobox */
+                                            #welcome-btn { display: none !important; }
                                 /* Caixa de boas-vindas - ocupa maior altura e largura reduzida */
                                 #welcome-box {
                                     left: 50% !important;
