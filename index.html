@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.133/Build/Cesium/Cesium.js"></script>
     <link href="https://cesium.com/downloads/cesiumjs/releases/1.133/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
-    <title>São Gabriel — OSM Variante (completo)</title>
+    <title>São Gabriel-3D</title>
     <style type="text/css">
         body,
         html {
@@ -80,6 +80,16 @@
         .cesium-viewer .cesium-button[title*="Search"],
         .cesium-viewer .cesium-button[title*="Help"] {
             display: none !important;
+        }
+
+        /* Responsivo: Model-viewer modal em mobile */
+        @media (max-width: 768px) {
+            #mv-modal {
+                width: 95vw !important;
+                height: 80vh !important;
+                max-width: 95vw !important;
+                max-height: 80vh !important;
+            }
         }
     </style>
 </head>
@@ -561,6 +571,7 @@
                         }
                     };
                 }
+
                 // Tourism UI (simplified)
                 // Nota: o botão de "Lista Turismo" e seu modal foram removidos —
                 // mantemos apenas o toggle de marcadores (tourism-toggle-btn).
@@ -763,8 +774,37 @@
                     document.head.appendChild(st);
                 })();
 
-                // Handler do botão fixo 'Bem Vindo'
+                // Handler do botão fixo 'Bem Vindo' + visibilidade inteligente
+                // O botão ficará visível apenas quando não houver infoboxes abertos
                 const wb = document.getElementById('welcome-btn');
+                function updateWelcomeBtnVisibility() {
+                    try {
+                        if (!wb) return;
+                        // procura por infoboxes/carrosséis padrão usados no app
+                        const anyBox = document.querySelector('#welcome-box, #infobox, #prefeitos-box, #marechais-box, #ilustres-box, #infobox-lenda, #tourism-infobox');
+                        if (anyBox) {
+                            wb.style.display = 'none';
+                            wb.setAttribute('aria-hidden', 'true');
+                        } else {
+                            wb.style.display = '';
+                            wb.removeAttribute('aria-hidden');
+                        }
+                    } catch (e) {
+                        console.warn('updateWelcomeBtnVisibility erro:', e);
+                    }
+                }
+
+                // Observador para monitorar quando infoboxes são adicionados/removidos
+                try {
+                    const mo = new MutationObserver(() => updateWelcomeBtnVisibility());
+                    mo.observe(document.body, { childList: true, subtree: true });
+                } catch (e) {
+                    console.warn('Falha ao criar MutationObserver para welcome-btn:', e);
+                }
+
+                // Chamada inicial para ajustar visibilidade com o estado atual da página
+                try { updateWelcomeBtnVisibility(); } catch (e) { }
+
                 if (wb) wb.onclick = () => { showWelcomeBox(); };
 
                 // Atacha handler ao botão estático 'Homens Ilustres'
@@ -888,7 +928,7 @@
                                 // elipse principal: halo semi-transparente
                                 const halo = viewer.entities.add({
                                     id: 'monument_halo_' + id,
-                                    position: data.position,
+                             position: data.position,
                                     ellipse: {
                                         semiMajorAxis: 12.0,
                                         semiMinorAxis: 8.0,
@@ -1608,6 +1648,166 @@
                 // Lógica de alternância OSM/GLB
                 // ...existing code...
 
+                // Modal fullscreen com model-viewer e abas [3D] [Info]
+                function showModelViewerModal(id, glbUri, title, description) {
+                    // Minimiza menu lateral automaticamente
+                    const leftPanel = document.getElementById('left-panel');
+                    if (leftPanel && !leftPanel.classList.contains('minimized')) {
+                        leftPanel.classList.add('minimized');
+                    }
+
+                    // Remove modal antigo se existir
+                    let oldModal = document.getElementById('mv-modal');
+                    if (oldModal) oldModal.parentNode.removeChild(oldModal);
+
+                    // Cria modal
+                    const modal = document.createElement('div');
+                    modal.id = 'mv-modal';
+                    modal.style.cssText = `
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        width: 800px;
+                        max-width: 95vw;
+                        height: 600px;
+                        max-height: 85vh;
+                        background: ${BOX_BG};
+                        border: 2px solid #aaa;
+                        border-radius: 12px;
+                        box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+                        z-index: 1000;
+                        display: flex;
+                        flex-direction: column;
+                        overflow: hidden;
+                        font-family: sans-serif;
+                    `;
+
+                    // Header com título e botão fechar
+                    const header = document.createElement('div');
+                    header.style.cssText = `
+                        background: ${BOX_ALT};
+                        color: ${BOX_FG};
+                        padding: 12px 16px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        border-bottom: 1px solid #666;
+                    `;
+                    header.innerHTML = `
+                        <div style="font-size: 18px; font-weight: bold;">${title}</div>
+                        <button id="mv-close" style="background: #d33; color: #fff; border: none; border-radius: 4px; padding: 6px 12px; cursor: pointer; font-size: 16px;">✕</button>
+                    `;
+
+                    // Conteúdo principal (área alternável entre 3D e Info)
+                    const content = document.createElement('div');
+                    content.id = 'mv-content';
+                    content.style.cssText = `
+                        flex: 1;
+                        overflow: auto;
+                        position: relative;
+                        background: transparent;
+                    `;
+
+                    // Área 3D (model-viewer)
+                    const area3D = document.createElement('div');
+                    area3D.id = 'mv-area-3d';
+                    area3D.style.cssText = `
+                        width: 100%;
+                        height: 100%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    `;
+                    area3D.innerHTML = `<model-viewer id="mv-glb-${id}" src="${glbUri}" alt="${title}" auto-rotate camera-controls style="width: 100%; height: 100%; background: transparent;"></model-viewer>`;
+
+                    // Área Info (descrição com zebra)
+                    const areaInfo = document.createElement('div');
+                    areaInfo.id = 'mv-area-info';
+                    areaInfo.style.cssText = `
+                        width: 100%;
+                        height: 100%;
+                        overflow-y: auto;
+                        padding: 16px;
+                        display: none;
+                        color: ${BOX_FG};
+                    `;
+                    let zebraDesc = '';
+                    if (description) {
+                        let descParts = description.split(/<br\s*\/?><br\s*\/?>/);
+                        zebraDesc = descParts.map((part, i) => `<div style='background:${i % 2 === 0 ? BOX_BG : BOX_ALT};padding:8px;border-radius:4px;margin-bottom:6px;'>${part}</div>`).join('');
+                    }
+                    areaInfo.innerHTML = zebraDesc || '<p style="color: #aaa;">Sem descrição disponível.</p>';
+
+                    content.appendChild(area3D);
+                    content.appendChild(areaInfo);
+
+                    // Footer com abas [3D] [Info]
+                    const footer = document.createElement('div');
+                    footer.style.cssText = `
+                        background: ${BOX_ALT};
+                        padding: 10px 16px;
+                        display: flex;
+                        gap: 12px;
+                        justify-content: center;
+                        border-top: 1px solid #666;
+                    `;
+                    footer.innerHTML = `
+                        <button id="tab-3d" style="background: ${BTN_BG}; color: ${BOX_FG}; border: 2px solid #4a9eff; border-radius: 6px; padding: 8px 24px; cursor: pointer; font-weight: bold; font-size: 15px;">🎨 3D</button>
+                        <button id="tab-info" style="background: ${BTN_BG}; color: ${BOX_FG}; border: 1px solid #666; border-radius: 6px; padding: 8px 24px; cursor: pointer; font-size: 15px;">📄 Info</button>
+                    `;
+
+                    modal.appendChild(header);
+                    modal.appendChild(content);
+                    modal.appendChild(footer);
+                    document.body.appendChild(modal);
+
+                    // Event listeners
+                    document.getElementById('mv-close').onclick = () => {
+                        if (modal.parentNode) modal.parentNode.removeChild(modal);
+                    };
+
+                    const tab3D = document.getElementById('tab-3d');
+                    const tabInfo = document.getElementById('tab-info');
+
+                    tab3D.onclick = () => {
+                        area3D.style.display = 'flex';
+                        areaInfo.style.display = 'none';
+                        tab3D.style.border = '2px solid #4a9eff';
+                        tab3D.style.fontWeight = 'bold';
+                        tabInfo.style.border = '1px solid #666';
+                        tabInfo.style.fontWeight = 'normal';
+                    };
+
+                    tabInfo.onclick = () => {
+                        area3D.style.display = 'none';
+                        areaInfo.style.display = 'block';
+                        tabInfo.style.border = '2px solid #4a9eff';
+                        tabInfo.style.fontWeight = 'bold';
+                        tab3D.style.border = '1px solid #666';
+                        tab3D.style.fontWeight = 'normal';
+                    };
+
+                    // Carrega model-viewer library (lazy-load)
+                    function ensureModelViewer(cb) {
+                        try {
+                            if (window.customElements && customElements.get && customElements.get('model-viewer')) {
+                                cb();
+                                return;
+                            }
+                        } catch (e) { /* ignore */ }
+                        const s = document.createElement('script');
+                        s.type = 'module';
+                        s.src = 'https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js';
+                        s.onload = cb;
+                        s.onerror = cb;
+                        document.head.appendChild(s);
+                    }
+                    ensureModelViewer(() => {
+                        console.debug('model-viewer modal ready:', glbUri);
+                    });
+                }
+
                 // Cria/mostra infobox
                 function showInfobox(id) {
                     const data = buildingsMap[id];
@@ -1648,20 +1848,19 @@
                         extraBtn = `<button id='back-to-low' style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>Voltar ao modelo simplificado</button> `;
                     }
 
-                    // Monta área de mídia: prefer GLB rotativo (model-viewer) se uri_detail for GLB,
+                    // Monta área de mídia: prefer GLB rotativo (model-viewer) se uri_detail for GLB ÚNICO,
                     // caso contrário usa carousel de imagens ou GIF/JPG padrão.
                     let mediaHtml = '';
                     const detailUris = (data.uri_detail && (Array.isArray(data.uri_detail) ? data.uri_detail : [data.uri_detail])) || [];
                     const firstDetail = detailUris.length > 0 ? detailUris[0] : null;
-                    const isGlbDetail = firstDetail && typeof firstDetail === 'string' && firstDetail.toLowerCase().endsWith('.glb');
+                    // Se há múltiplos GLBs (ex: Prefeitura com 4 blocos), NÃO usar model-viewer
+                    // Apenas mostra foto JPG normal. GLBs são carregados no mapa via addDetailModel.
+                    const isGlbDetail = detailUris.length === 1 && firstDetail && typeof firstDetail === 'string' && firstDetail.toLowerCase().endsWith('.glb');
 
                     if (isGlbDetail) {
-                        // model-viewer: mostra primeiro detalhe e adiciona controles prev/next se houver múltiplos
-                        mediaHtml = `
-                            <div id="mv-wrap-${id}" style="text-align:center;">
-                                <model-viewer id="model-viewer-${id}" src="${firstDetail}" alt="${data.info.title}" auto-rotate camera-controls style="width:100%;height:260px;max-height:40vh; background: transparent; display:block; margin:0 auto;"> </model-viewer>
-                                ${detailUris.length > 1 ? (`<div style="margin-top:6px;display:flex;gap:8px;justify-content:center;align-items:center;"><button id="prev-glb-${id}" style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 8px;cursor:pointer;'>◀</button> <span id="glb-indicator-${id}" style='color:${BOX_FG};'>1/${detailUris.length}</span> <button id="next-glb-${id}" style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 8px;cursor:pointer;'>▶</button> <button id="join-glb-${id}" style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 8px;cursor:pointer;'>Mostrar juntas</button></div>`) : ''}
-                            </div>`;
+                        // GLB único: abre modal fullscreen com abas [3D] [Info]
+                        showModelViewerModal(id, firstDetail, data.info.title, data.info.description);
+                        return; // Não cria infobox antiga
                     } else if (data.info.images && data.info.images.length > 0) {
                         if (data.info.images.length === 1) {
                             mediaHtml = `<div style="text-align:center;"><img id="carousel-img-glb" src="${data.info.images[0]}" class="img-building" style="max-width:100%;height:auto;border-radius:6px;" /></div>`;
@@ -1716,84 +1915,6 @@
                                 imgEl.src = data.info.images[idxImg];
                                 indicator.textContent = `${idxImg + 1}/${data.info.images.length}`;
                             };
-                        }
-                    }
-                    // Inicializa model-viewer se estamos mostrando GLB rotativo
-                    if (isGlbDetail) {
-                        // Se houver múltiplos .glb, exibimos direto o viewer combinado (Three.js)
-                        // em vez do model-viewer/carrossel — evita mostrar "pedaços" separados.
-                        if (detailUris.length > 1) {
-                            // cria container temporário dentro do infobox para o viewer combinado
-                            const wrap = document.getElementById(`mv-wrap-${id}`);
-                            if (wrap) {
-                                // evita criar múltiplos viewers
-                                if (!document.getElementById(`combined-viewer-${id}`)) {
-                                    // feedback imediato
-                                    wrap.innerHTML = '';
-                                    const msg = document.createElement('div');
-                                    msg.id = `combined-viewer-${id}`;
-                                    msg.style.width = '100%';
-                                    msg.style.height = '320px';
-                                    msg.style.maxHeight = '44vh';
-                                    msg.style.background = 'transparent';
-                                    msg.style.display = 'block';
-                                    msg.style.marginTop = '8px';
-                                    msg.innerHTML = `<div style="color:#ddd;font-size:13px;padding:8px;text-align:center;">Carregando visualização conjunta...<br><small style='color:#bbb;'>(ver console para CORS/erros)</small></div>`;
-                                    wrap.appendChild(msg);
-                                    ensureThreeJS().then(mods => {
-                                        try {
-                                            createCombinedViewer(mods, detailUris, msg, id);
-                                        } catch (e) {
-                                            console.warn('Falha ao criar viewer combinado', e);
-                                            msg.innerHTML = '<div style="color:#fdd;">Falha ao criar visualização combinada (ver console).</div>';
-                                        }
-                                    }).catch(err => {
-                                        console.warn('Falha ao carregar Three.js:', err);
-                                        msg.innerHTML = '<div style="color:#fdd;">Falha ao carregar dependências 3D (ver console).</div>';
-                                    });
-                                }
-                            }
-                        } else {
-                            // único GLB: usa model-viewer como antes (lazy-load)
-                            function ensureModelViewer(cb) {
-                                try {
-                                    if (window.customElements && customElements.get && customElements.get('model-viewer')) {
-                                        cb();
-                                        return;
-                                    }
-                                } catch (e) { /* ignore */ }
-                                const s = document.createElement('script');
-                                s.type = 'module';
-                                s.src = 'https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js';
-                                s.onload = cb;
-                                s.onerror = cb;
-                                document.head.appendChild(s);
-                            }
-                            ensureModelViewer(() => {
-                                try {
-                                    const mv = document.getElementById(`model-viewer-${id}`);
-                                    if (!mv) return;
-                                    let mvIdx = 0;
-                                    const updateIndicator = () => {
-                                        const ind = document.getElementById(`glb-indicator-${id}`);
-                                        if (ind) ind.textContent = `${mvIdx + 1}/${detailUris.length}`;
-                                    };
-                                    if (detailUris.length > 1) {
-                                        const prevBtn = document.getElementById(`prev-glb-${id}`);
-                                        const nextBtn = document.getElementById(`next-glb-${id}`);
-                                        if (prevBtn) prevBtn.onclick = () => {
-                                            mvIdx = (mvIdx - 1 + detailUris.length) % detailUris.length;
-                                            mv.setAttribute('src', detailUris[mvIdx]);
-                                            updateIndicator();
-                                        };
-                                        if (nextBtn) nextBtn.onclick = () => {
-                                            mvIdx = (mvIdx + 1) % detailUris.length;
-                                            mv.setAttribute('src', detailUris[mvIdx]);
-                                            updateIndicator();
-                                        };
-                                    }
-                                } catch (e) { console.warn('model-viewer init failed', e); }
-                            });
                         }
                     }
                     if (data.uri_base && data.uri_detail) {
