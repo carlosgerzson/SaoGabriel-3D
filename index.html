@@ -106,31 +106,11 @@
         <div id="left-controls" style="display:flex;flex-direction:column;gap:8px;overflow:hidden;transition:max-height 0.28s ease;">
             <button id="toggle-osm-btn" aria-pressed="true" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Polígonos</button>
             <button id="toggle-base-btn" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Satélite/Urbano</button>
-            <!-- Controles visuais para o Mapa Urbano: escolha do basemap + ajustes -->
-            <div id="urban-style-panel" style="background:rgba(0,0,0,0.45);padding:8px;border-radius:6px;border:1px solid rgba(200,200,200,0.06);display:flex;flex-direction:column;gap:6px;">
-                <div style="font-size:12px;color:#ddd;font-weight:600;">Ajuste visual (Mapa Urbano)</div>
-                <div style="display:flex;gap:8px;align-items:center;font-size:12px;color:#ddd;">
-                    <label for="urban-basemap" style="min-width:64px;">Base</label>
-                    <select id="urban-basemap" style="flex:1;padding:4px;border-radius:4px;background:#222;color:#fff;border:1px solid #444;">
-                        <option value="osm">OpenStreetMap (padrão)</option>
-                        <option value="maptiler">MapTiler (streets)</option>
-                    </select>
-                </div>
-                <div style="display:flex;gap:8px;align-items:center;font-size:12px;color:#ddd;">
-                    <label for="urban-alpha" style="min-width:64px;">Opacidade</label>
-                    <input id="urban-alpha" type="range" min="0" max="1" step="0.01" value="1" style="flex:1;" />
-                    <span id="urban-alpha-val" style="width:34px;text-align:right;">1.00</span>
-                </div>
-                <!-- Brilho e Contraste removidos para simplificar painel em dispositivos pequenos -->
-                <div style="display:flex;gap:8px;align-items:center;font-size:12px;color:#ddd;">
-                    <label for="urban-sat" style="min-width:64px;">Saturação</label>
-                    <input id="urban-sat" type="range" min="0" max="2.0" step="0.01" value="0.88" style="flex:1;" />
-                    <span id="urban-sat-val" style="width:34px;text-align:right;">0.88</span>
-                </div>
-                <!-- Presets removidos: UI simplificada (apenas sliders e seleção de basemap) -->
-            </div>
-            <button id="mapa-tratados-btn" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Mapa SG_tratados</button>
-            <button id="mapa-1930-btn" style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Mapa SG_1930</button>
+            <!-- Seletor de basemap (limpo, sem título) -->
+            <select id="urban-basemap" style="background:#222;color:#fff;border:1px solid #444;padding:6px 10px;border-radius:6px;font-size:13px;">
+                <option value="osm">OpenStreetMap</option>
+                <option value="maptiler">MapTiler</option>
+            </select>
             <button id="tourism-toggle-btn" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Turismo (8)</button>
             <button id="marechais-btn" style="background:#333;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Marechais</button>
             <button id="lendas-toggle-btn" style="background:#292929;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Lendas (5)</button>
@@ -337,13 +317,9 @@
                     }
                 }
 
-                // Inicializa explicitamente a base urbana (Carto Positron)
+                // Inicializa explicitamente a base urbana (OpenStreetMap padrão)
                 setUrbanBase();
 
-                // Botões para alternar mapas históricos
-                document.getElementById('mapa-tratados-btn').onclick = () => {
-                    mostrarOuOcultarMapaHistorico('SG_tratados.jpg');
-                };
                 // Ativa handler do botão para alternar Mapa Urbano ON/OFF
                 const toggleBaseBtn = document.getElementById('toggle-base-btn');
                 if (toggleBaseBtn) {
@@ -414,30 +390,7 @@
                     }
                 }
 
-                // Atualiza os controles UI para refletir valores atuais
-                function updateUrbanControlsUI() {
-                    const a = document.getElementById('urban-alpha');
-                    const s = document.getElementById('urban-sat');
-                    const h = document.getElementById('urban-hue');
-                    if (a) { a.value = String(urbanStyle.alpha); }
-                    if (s) { s.value = String(urbanStyle.saturation); }
-                    if (h) { h.value = String(urbanStyle.hue); }
-                    const av = document.getElementById('urban-alpha-val'); if (av) av.textContent = Number(urbanStyle.alpha).toFixed(2);
-                    const sv = document.getElementById('urban-sat-val'); if (sv) sv.textContent = Number(urbanStyle.saturation).toFixed(2);
-                    const hv = document.getElementById('urban-hue-val'); if (hv) hv.textContent = Number(urbanStyle.hue).toFixed(2);
-                }
-
-                // Liga os eventos dos sliders e botões de preset
-                function bindUrbanStyleControls() {
-                    const a = document.getElementById('urban-alpha');
-                    const s = document.getElementById('urban-sat');
-                    const h = document.getElementById('urban-hue');
-                    if (a) a.oninput = function () { urbanStyle.alpha = Number(this.value); applyUrbanStyleToLayer(urbanImageryLayer, urbanStyle); updateUrbanControlsUI(); };
-                    if (s) s.oninput = function () { urbanStyle.saturation = Number(this.value); applyUrbanStyleToLayer(urbanImageryLayer, urbanStyle); updateUrbanControlsUI(); };
-                    if (h) h.oninput = function () { urbanStyle.hue = Number(this.value); applyUrbanStyleToLayer(urbanImageryLayer, urbanStyle); updateUrbanControlsUI(); };
-
-                    // Presets e botão Restaurar removidos — mantemos apenas sliders.
-                }
+                // Controles de estilo removidos - mantemos apenas seleção de basemap
 
                 // Quando criamos a camada urbana, aplicamos estilos e respeitamos o estilo selecionado
                 const originalSetUrbanBase = setUrbanBase;
@@ -457,9 +410,8 @@
                         urbanBaseActive = true;
                         const btn = document.getElementById('toggle-base-btn');
                         if (btn) btn.innerText = 'Satélite/Urbano';
-                        // aplica estilo atual ao novo layer
+                        // aplica estilo atual ao novo layer (sem UI controls)
                         applyUrbanStyleToLayer(urbanImageryLayer, urbanStyle);
-                        updateUrbanControlsUI();
                     } catch (e) {
                         console.warn('Erro ao setar base urbana:', e);
                         ensureFallbackImagery();
@@ -488,39 +440,7 @@
                     console.warn('Falha ao aplicar base urbana inicial:', e);
                 }
 
-                // Se o controle de hue não estiver presente no HTML, criá-lo dinamicamente
-                function ensureHueControlExists() {
-                    try {
-                        if (document.getElementById('urban-hue')) return; // já existe
-                        const container = document.getElementById('urban-controls') || document.getElementById('left-controls') || document.body;
-                        const wrapper = document.createElement('div');
-                        wrapper.style.marginTop = '6px';
-                        wrapper.innerHTML = `
-                            <label style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#ddd;">
-                                <span>Hue</span>
-                                <span id="urban-hue-val">${Number(urbanStyle.hue).toFixed(2)}</span>
-                            </label>
-                            <input id="urban-hue" type="range" min="-1.0" max="1.0" step="0.01" value="${urbanStyle.hue}" style="width:100%;">
-                        `;
-                        // Tenta inserir próximo ao controle de alpha se existir
-                        const alphaEl = document.getElementById('urban-alpha');
-                        if (alphaEl && alphaEl.parentNode) {
-                            alphaEl.parentNode.insertAdjacentElement('afterend', wrapper);
-                        } else {
-                            container.appendChild(wrapper);
-                        }
-                    } catch (e) {
-                        console.warn('Falha ao criar controle de Hue dinamicamente:', e);
-                    }
-                }
-
-                ensureHueControlExists();
-
-                // Bind initial
-                bindUrbanStyleControls();
-                document.getElementById('mapa-1930-btn').onclick = () => {
-                    mostrarOuOcultarMapaHistorico('SG_1930.jpg');
-                };
+                // Controles dinâmicos removidos - UI simplificada
                 // Botão 'Todos' que expande/colapsa os controles do painel esquerdo
                 const todosBtn = document.getElementById('todos-btn');
                 const leftControls = document.getElementById('left-controls');
@@ -1385,7 +1305,10 @@
                 }
                 function addLowModel(id) {
                     const data = buildingsMap[id];
-                    if (!data || !data.uri_base) return;
+                    if (!data || !data.uri_base) {
+                        console.debug('[DEBUG] addLowModel: skipped', id, '- sem uri_base');
+                        return;
+                    }
                     // Remove versões anteriores (low ou detail)
                     removeDetailModel(id);
                     const entLowExisting = viewer.entities.getById(id + '_low');
@@ -1405,8 +1328,9 @@
                         }
                     });
                     glbEntities[id] = ent; // referencia ao low
+                    console.debug('[DEBUG] addLowModel: adicionado', id, data.uri_base);
                     // Aplicar tint laranja por padrão a todos os LOWs
-                    try { setEntityTintSingle(ent, true); } catch (e) { /* noop */ }
+                    try { setEntityTintSingle(ent, true); } catch (e) { console.warn('[WARN] Falha ao aplicar tint em', id, e); }
                     // Ao garantir o low, removemos id de activeGlbs (se estava)
                     if (activeGlbs.has(id)) {
                         activeGlbs.delete(id);
@@ -1479,10 +1403,12 @@
                     // Mantém chave para recriar low depois
                 }
                 // Inicial: adiciona somente lows (exceto plano 999999999)
+                console.debug('[DEBUG] Iniciando carregamento de GLBs LOW...');
                 Object.keys(buildingsMap).forEach(id => {
                     if (id === '999999999') return;
                     addLowModel(id);
                 });
+                console.debug('[DEBUG] Carregamento de GLBs LOW concluído. Total de entities:', viewer.entities.values.length);
 
                 // Após criar os lows, aplica a lógica de mostrar/ocultar OSM conforme osmVisible
                 updateTilesetShowForOSM(osmVisible);
@@ -1755,6 +1681,7 @@
                     footer.innerHTML = `
                         <button id="tab-3d" style="background: ${BTN_BG}; color: ${BOX_FG}; border: 2px solid #4a9eff; border-radius: 6px; padding: 8px 24px; cursor: pointer; font-weight: bold; font-size: 15px;">🎨 3D</button>
                         <button id="tab-info" style="background: ${BTN_BG}; color: ${BOX_FG}; border: 1px solid #666; border-radius: 6px; padding: 8px 24px; cursor: pointer; font-size: 15px;">📄 Info</button>
+                        <button id="back-to-low-modal" style="background: #d66; color: #fff; border: 1px solid #888; border-radius: 6px; padding: 8px 20px; cursor: pointer; font-size: 15px;">🔄 Simplificado</button>
                     `;
 
                     modal.appendChild(header);
@@ -1786,6 +1713,24 @@
                         tabInfo.style.fontWeight = 'bold';
                         tab3D.style.border = '1px solid #666';
                         tab3D.style.fontWeight = 'normal';
+                    };
+
+                    // Botão Simplificado: remove detalhe e volta ao LOW
+                    document.getElementById('back-to-low-modal').onclick = () => {
+                        const current = glbEntities[id];
+                        if (current) {
+                            if (Array.isArray(current)) {
+                                current.forEach(ent => viewer.entities.remove(ent));
+                            } else {
+                                viewer.entities.remove(current);
+                            }
+                        }
+                        if (activeGlbs.has(id)) {
+                            activeGlbs.delete(id);
+                            updateTilesetShowForOSM(osmVisible);
+                        }
+                        addLowModel(id);
+                        if (modal.parentNode) modal.parentNode.removeChild(modal);
                     };
 
                     // Carrega model-viewer library (lazy-load)
