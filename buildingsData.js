@@ -308,8 +308,7 @@ A pedra fundamental foi lançada em 14 de março de 1863, com a primeira argamas
         position: Cesium.Cartesian3.fromDegrees(-54.319076, -30.339119, 136),  // 141
         orientation: new Cesium.HeadingPitchRoll(Cesium.Math.toRadians(-156), Cesium.Math.toRadians(0), Cesium.Math.toRadians(0)),
         uri_base: 'prefeitura_low.glb',
-        // Modelo via jsDelivr CDN (resolve CORS do GitHub Releases)
-        uri_detail: 'https://cdn.jsdelivr.net/gh/carlosgerzson/SaoGabriel-Historia@v1.0/prefeitura.glb',      
+        uri_detail: 'prefeitura.glb',
         info: {
             title: 'PREFEITURA MUNICIPAL',
             description: `O Palácio Plácido de Castro, sede da Prefeitura Municipal de São Gabriel, foi construído entre 1918 e 1924 em terreno adquirido por Frederico Fayet. O projeto, inspirado no Capitólio norte-americano, passou por diferentes engenheiros até ser concluído e inaugurado em 15 de novembro de 1924, durante a gestão do coronel Francisco Hermenegildo da Silva.<br><br>
