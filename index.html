@@ -257,8 +257,9 @@
                     duration: 3.5,
                     easingFunction: Cesium.EasingFunction.QUADRATIC_IN_OUT,
                     complete: function () {
-                        // Depois do flyTo inicial, mostra a caixa de boas-vindas
-                        try { showWelcomeBox(); } catch (e) { console.warn('Erro ao mostrar welcome box', e); }
+                        // Caixa de boas-vindas DESABILITADA (pedido dos usuários)
+                        // Usuário pode abrir manualmente clicando no botão "São Gabriel 3D"
+                        // try { showWelcomeBox(); } catch (e) { console.warn('Erro ao mostrar welcome box', e); }
                     }
                 });
 
@@ -444,22 +445,50 @@
                 // Botão 'Todos' que expande/colapsa os controles do painel esquerdo
                 const todosBtn = document.getElementById('todos-btn');
                 const leftControls = document.getElementById('left-controls');
-                // Inicializa max-height para permitir transição (expandido por padrão)
-                if (leftControls) {
-                    leftControls.style.maxHeight = leftControls.scrollHeight + 'px';
+                
+                // Estado do menu (inicia RECOLHIDO)
+                let menuExpanded = false;
+                
+                // Função para recolher menu
+                function collapseMenu() {
+                    if (!leftControls) return;
+                    const children = Array.from(leftControls.children);
+                    children.forEach(ch => {
+                        ch.style.display = 'none';
+                    });
+                    if (todosBtn) {
+                        todosBtn.innerText = 'Menu ▸';
+                        todosBtn.setAttribute('aria-expanded', 'false');
+                        todosBtn.style.display = ''; // Sempre visível
+                    }
+                    menuExpanded = false;
                 }
-                if (todosBtn && leftControls) {
+                
+                // Função para expandir menu
+                function expandMenu() {
+                    if (!leftControls) return;
+                    const children = Array.from(leftControls.children);
+                    children.forEach(ch => {
+                        ch.style.display = '';
+                    });
+                    if (todosBtn) {
+                        todosBtn.innerText = 'Menu ▾';
+                        todosBtn.setAttribute('aria-expanded', 'true');
+                    }
+                    menuExpanded = true;
+                }
+                
+                // Inicializa RECOLHIDO (executa imediatamente)
+                collapseMenu();
+                
+                // Handler do botão
+                if (todosBtn) {
                     todosBtn.onclick = () => {
-                        // Implementação simples: alterna display dos botões filhos dentro de #left-controls
-                        const children = Array.from(leftControls.children).filter(ch => ch !== todosBtn);
-                        if (!children.length) return;
-                        // verifica visibilidade do primeiro filho
-                        const firstVisible = getComputedStyle(children[0]).display !== 'none';
-                        children.forEach(ch => {
-                            ch.style.display = firstVisible ? 'none' : '';
-                        });
-                        todosBtn.setAttribute('aria-expanded', (!firstVisible).toString());
-                        todosBtn.innerText = firstVisible ? 'Menu ▸' : 'Menu ▾';
+                        if (menuExpanded) {
+                            collapseMenu();
+                        } else {
+                            expandMenu();
+                        }
                     };
                 }
                 // Botão para refazer o zoom/voo inicial para a praça

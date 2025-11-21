@@ -486,7 +486,7 @@ Um dos destaques do prédio é a porta principal, talhada em madeira de cinamomo
     },
     '518734962': { // Estádio Municipal
         elevationOffset: 0,
-        position: Cesium.Cartesian3.fromDegrees(-54.327044, -30.343595, 139),// 144.08
+        position: Cesium.Cartesian3.fromDegrees(-54.327044, -30.343595, 136),// 144.08
         orientation: new Cesium.HeadingPitchRoll(Cesium.Math.toRadians(-136), Cesium.Math.toRadians(0), Cesium.Math.toRadians(0)),
         uri_base: 'estadio_low.glb',
         uri_detail: 'estadio.glb',
@@ -495,6 +495,24 @@ Um dos destaques do prédio é a porta principal, talhada em madeira de cinamomo
             description: 'O Estádio Municipal de São Gabriel é um importante espaço esportivo da cidade, utilizado para jogos de futebol e eventos culturais. Sua construção foi um marco para o esporte local e continua a ser um ponto de encontro para a comunidade.',
             images: ['estadio_municipal.jpg']
         }
+    },
+    '494691778': { // Perpétuo Socorro
+        elevationOffset: 0,
+        position: Cesium.Cartesian3.fromDegrees(-54.323132, -30.337029, 130),// 144.08
+        orientation: new Cesium.HeadingPitchRoll(Cesium.Math.toRadians(-156), Cesium.Math.toRadians(0), Cesium.Math.toRadians(0)),
+        uri_base: 'perpetuo_low.glb',
+        uri_detail: 'perpetuo.glb',
+        info: {
+            title: 'PERPÉTUO SOCORRO',
+            description: 'O Estádio Municipal de São Gabriel é um importante espaço esportivo da cidade, utilizado para jogos de futebol e eventos culturais. Sua construção foi um marco para o esporte local e continua a ser um ponto de encontro para a comunidade.',
+            images: ['estadio_municipal.jpg']
+        }
+    },
+     '494691780': { // placeholder_osm.glb - Perpétuo Socorro
+        elevationOffset: 0,
+        position: Cesium.Cartesian3.fromDegrees(-54.323132, -30.337029, 130),// 144.08
+        orientation: new Cesium.HeadingPitchRoll(Cesium.Math.toRadians(-156), Cesium.Math.toRadians(0), Cesium.Math.toRadians(0)),
+        uri_base: 'placeholder_osm_low.glb',
     },
     '111111111': { // Heróis da FEB
         elevationOffset: 0,
