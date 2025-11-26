@@ -936,20 +936,23 @@
                     let box = document.createElement('div');
                     box.id = 'marechais-box';
                     box.style.position = 'fixed';
-                    box.style.top = '10px';
-                    box.style.right = '20px';
+                    box.style.top = '50%';
+                    box.style.left = '50%';
+                    box.style.transform = 'translate(-50%, -50%) scale(0.9)';
                     box.style.setProperty('background', BOX_BG, 'important');
                     box.style.setProperty('color', BOX_FG, 'important');
                     box.style.border = '1.5px solid #aaa';
                     box.style.padding = '14px';
                     box.style.zIndex = 30;
                     box.style.width = '320px';
-                    box.style.boxShadow = '0 2px 16px #000a';
+                    box.style.maxWidth = '90vw';
+                    box.style.maxHeight = '85vh';
+                    box.style.overflowY = 'auto';
+                    box.style.boxShadow = '0 8px 32px rgba(0,0,0,0.6)';
                     box.style.borderRadius = '10px';
                     box.style.fontFamily = 'sans-serif';
-                    box.style.transform = 'translateX(380px)';
                     box.style.opacity = '0';
-                    box.style.transition = 'transform 0.6s cubic-bezier(.6,1.5,.4,1), opacity 0.4s';
+                    box.style.transition = 'transform 0.4s cubic-bezier(.6,1.5,.4,1), opacity 0.4s';
                     document.body.appendChild(box);
                     window.addEventListener('keydown', keyHandler);
                     function keyHandler(e) {
@@ -989,9 +992,8 @@
                             window.removeEventListener('keydown', keyHandler);
                         };
                         setTimeout(() => {
-                            box.style.transform = 'translateX(0)';
+                            box.style.transform = 'translate(-50%, -50%) scale(1)';
                             box.style.opacity = '1';
-                            box.style.display = 'block';
                         }, 10);
                     }
                     render();
@@ -1087,20 +1089,23 @@
                     let box = document.createElement('div');
                     box.id = 'ilustres-box';
                     box.style.position = 'fixed';
-                    box.style.top = '10px';
-                    box.style.right = '20px';
+                    box.style.top = '50%';
+                    box.style.left = '50%';
+                    box.style.transform = 'translate(-50%, -50%) scale(0.9)';
                     box.style.setProperty('background', BOX_BG, 'important');
                     box.style.setProperty('color', BOX_FG, 'important');
                     box.style.border = '1.5px solid #aaa';
                     box.style.padding = '14px';
                     box.style.zIndex = 30;
                     box.style.width = '320px';
-                    box.style.boxShadow = '0 2px 16px #000a';
+                    box.style.maxWidth = '90vw';
+                    box.style.maxHeight = '85vh';
+                    box.style.overflowY = 'auto';
+                    box.style.boxShadow = '0 8px 32px rgba(0,0,0,0.6)';
                     box.style.borderRadius = '10px';
                     box.style.fontFamily = 'sans-serif';
-                    box.style.transform = 'translateX(380px)';
                     box.style.opacity = '0';
-                    box.style.transition = 'transform 0.6s cubic-bezier(.6,1.5,.4,1), opacity 0.4s';
+                    box.style.transition = 'transform 0.4s cubic-bezier(.6,1.5,.4,1), opacity 0.4s';
                     document.body.appendChild(box);
 
                     function render() {
@@ -1125,9 +1130,8 @@
                         document.getElementById('ilustres-next').onclick = () => { idx = (idx + 1) % ilustres.length; render(); };
                         document.getElementById('ilustres-close').onclick = () => { if (box.parentNode) box.parentNode.removeChild(box); };
                         setTimeout(() => {
-                            box.style.transform = 'translateX(0)';
+                            box.style.transform = 'translate(-50%, -50%) scale(1)';
                             box.style.opacity = '1';
-                            box.style.display = 'block';
                         }, 10);
                     }
                     render();
@@ -1156,20 +1160,22 @@
                     let box = document.createElement('div');
                     box.id = 'infobox-lenda';
                     box.style.position = 'fixed';
-                    box.style.top = '10px';
-                    box.style.right = '20px';
+                    box.style.top = '50%';
+                    box.style.left = '50%';
+                    box.style.transform = 'translate(-50%, -50%) scale(0.9)';
                     box.style.setProperty('background', BOX_BG, 'important');
                     box.style.setProperty('color', BOX_FG, 'important');
                     box.style.border = '1.5px solid #aaa';
                     box.style.padding = '14px';
                     box.style.zIndex = 30;
                     box.style.width = '340px';
-                    box.style.boxShadow = '0 2px 16px #000a';
+                    box.style.maxWidth = '90vw';
+                    box.style.maxHeight = '85vh';
+                    box.style.boxShadow = '0 8px 32px rgba(0,0,0,0.6)';
                     box.style.borderRadius = '10px';
                     box.style.fontFamily = 'sans-serif';
-                    box.style.transform = 'translateX(380px)';
                     box.style.opacity = '0';
-                    box.style.transition = 'transform 0.6s cubic-bezier(.6,1.5,.4,1), opacity 0.4s';
+                    box.style.transition = 'transform 0.4s cubic-bezier(.6,1.5,.4,1), opacity 0.4s';
                     box.style.overflowY = 'auto';
                     document.body.appendChild(box);
 
@@ -1224,9 +1230,8 @@
                     }
                     // Animação de entrada
                     setTimeout(() => {
-                        box.style.transform = 'translateX(0)';
+                        box.style.transform = 'translate(-50%, -50%) scale(1)';
                         box.style.opacity = '1';
-                        box.style.display = 'block';
                     }, 10);
                 }
 
@@ -1551,15 +1556,19 @@
                                 const box = document.createElement('div');
                                 box.id = 'tourism-infobox';
                                 box.style.position = 'fixed';
-                                box.style.top = '10px';
-                                box.style.right = '20px';
+                                box.style.top = '50%';
+                                box.style.left = '50%';
+                                box.style.transform = 'translate(-50%, -50%)';
                                 box.style.setProperty('background', BOX_BG, 'important');
                                 box.style.setProperty('color', BOX_FG, 'important');
                                 box.style.color = BOX_FG;
                                 box.style.padding = '10px';
                                 box.style.zIndex = 70;
+                                box.style.maxWidth = '90vw';
+                                box.style.maxHeight = '85vh';
                                 box.style.border = '1px solid #666';
                                 box.style.borderRadius = '8px';
+                                box.style.boxShadow = '0 8px 32px rgba(0,0,0,0.6)';
                                 box.innerHTML = `
                                         <div style='text-align:center;'>
                                             <img src='${(p.images && p.images[0]) ? p.images[0] : "placeholder_tour.jpg"}' style='width:300px;height:200px;object-fit:cover;border-radius:6px;display:block;margin:0 auto 8px;' />
@@ -1718,9 +1727,27 @@
                     modal.appendChild(footer);
                     document.body.appendChild(modal);
 
+                    // Função para restaurar controles da câmera (fix iOS bug)
+                    function restoreCameraControls() {
+                        try {
+                            const controller = viewer.scene.screenSpaceCameraController;
+                            controller.enableRotate = true;
+                            controller.enableZoom = true;
+                            controller.enableLook = true;
+                            controller.enableTilt = true;
+                            controller.enableTranslate = true;
+                            controller.rotateEventTypes = [Cesium.CameraEventType.LEFT_DRAG];
+                            controller.zoomEventTypes = [Cesium.CameraEventType.MIDDLE_DRAG, Cesium.CameraEventType.WHEEL, Cesium.CameraEventType.PINCH];
+                            controller.panEventTypes = [Cesium.CameraEventType.RIGHT_DRAG];
+                        } catch (e) {
+                            console.warn('Erro ao restaurar controles da câmera:', e);
+                        }
+                    }
+
                     // Event listeners
                     document.getElementById('mv-close').onclick = () => {
                         if (modal.parentNode) modal.parentNode.removeChild(modal);
+                        restoreCameraControls();
                     };
 
                     const tab3D = document.getElementById('tab-3d');
@@ -1760,6 +1787,7 @@
                         }
                         addLowModel(id);
                         if (modal.parentNode) modal.parentNode.removeChild(modal);
+                        restoreCameraControls();
                     };
 
                     // Carrega model-viewer library (lazy-load)
@@ -1791,23 +1819,23 @@
                     let box = document.createElement('div');
                     box.id = 'infobox';
                     box.style.position = 'fixed';
-                    box.style.top = '10px';
-                    box.style.right = '20px';
+                    box.style.top = '50%';
+                    box.style.left = '50%';
+                    box.style.transform = 'translate(-50%, -50%) scale(0.9)';
                     box.style.setProperty('background', BOX_BG, 'important');
                     box.style.setProperty('color', BOX_FG, 'important');
                     box.style.border = '1.5px solid #aaa';
                     box.style.padding = '14px';
                     box.style.zIndex = 30;
                     box.style.width = '320px';
-                    box.style.maxWidth = '95vw';
-                    box.style.maxHeight = '70vh';
+                    box.style.maxWidth = '90vw';
+                    box.style.maxHeight = '85vh';
                     box.style.overflowY = 'auto';
-                    box.style.boxShadow = '0 2px 16px #000a';
+                    box.style.boxShadow = '0 8px 32px rgba(0,0,0,0.6)';
                     box.style.borderRadius = '10px';
                     box.style.fontFamily = 'sans-serif';
-                    box.style.transform = 'translateX(380px)';
                     box.style.opacity = '0';
-                    box.style.transition = 'transform 0.6s cubic-bezier(.6,1.5,.4,1), opacity 0.4s';
+                    box.style.transition = 'transform 0.4s cubic-bezier(.6,1.5,.4,1), opacity 0.4s';
                     document.body.appendChild(box);
 
                     // Zebra para descrição longa
@@ -1914,9 +1942,8 @@
                     }
                     // Animação de entrada
                     setTimeout(() => {
-                        box.style.transform = 'translateX(0)';
+                        box.style.transform = 'translate(-50%, -50%) scale(1)';
                         box.style.opacity = '1';
-                        box.style.display = 'block';
                     }, 10);
                 }
 
