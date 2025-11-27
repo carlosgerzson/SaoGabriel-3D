@@ -119,14 +119,11 @@
             <button id="reset-zoom-btn" title="Centralizar Praça" aria-label="Centralizar Praça" style="background:#5d0606;color:#f5f5f5;border:1px solid #888;padding:6px 10px;border-radius:6px;">Centralizar Praça</button>
         </div>
     </div>
-    <!-- Botão fixo de boas-vindas -->
-    <!-- z-index reduzido para evitar sobrepor caixas tipo infobox; escondido em telas pequenas -->
-    <button id="welcome-btn" style="position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:40;background:#333;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">🏛️ São Gabriel 3D</button>
 
     <!-- TESTE DE VERSÃO - CENTRO ABSOLUTO DA TELA -->
     <div id="version-test" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;background:#ff0000;color:#fff;padding:20px 30px;border-radius:10px;font-size:24px;font-weight:bold;border:3px solid #fff;box-shadow:0 0 30px rgba(255,0,0,0.8);text-align:center;">
         SÃO GABRIEL 3D<br>
-        <span style="font-size:32px;">VERSÃO 101</span>
+        <span style="font-size:32px;">VERSÃO 102</span>
     </div>
 
     <script type="module">
@@ -531,7 +528,8 @@
                 // mantemos apenas o toggle de marcadores (tourism-toggle-btn).
 
                 // Função que cria a caixa de boas-vindas centralizada com conteúdo da prefeitura
-                function showWelcomeBox() {
+                // DESABILITADA: removida do menu para simplificar UI (manter comentada para uso futuro)
+                /* function showWelcomeBox() {
                     const existing = document.getElementById('welcome-box');
                     if (existing) return; // já visível
                     const box = document.createElement('div');
@@ -578,7 +576,7 @@
                     `;
                     document.body.appendChild(box);
                     document.getElementById('welcome-close').onclick = () => { if (box.parentNode) box.parentNode.removeChild(box); };
-                }
+                } */
 
                 // Injetar CSS responsivo para mobile (aplica-se especialmente à caixa de boas-vindas e infoboxes)
                 (function injectMobileStyles() {
@@ -586,11 +584,7 @@
                     if (document.getElementById(styleId)) return;
                     const css = `
                             /* Regras específicas para telefones modernos (iPhone/Android) */
-                                        /* Garantir que o botão fixo de boas-vindas não cubra infoboxes no mobile */
-                                        #welcome-btn { z-index: 40; }
                                         @media (max-width: 420px) {
-                                            /* esconder o botão fixo em telas pequenas para não cobrir títulos/infobox */
-                                            #welcome-btn { display: none !important; }
                                 /* Caixa de boas-vindas - ocupa maior altura e largura reduzida */
                                 #welcome-box {
                                     left: 50% !important;
@@ -728,38 +722,7 @@
                     document.head.appendChild(st);
                 })();
 
-                // Handler do botão fixo 'Bem Vindo' + visibilidade inteligente
-                // O botão ficará visível apenas quando não houver infoboxes abertos
-                const wb = document.getElementById('welcome-btn');
-                function updateWelcomeBtnVisibility() {
-                    try {
-                        if (!wb) return;
-                        // procura por infoboxes/carrosséis padrão usados no app
-                        const anyBox = document.querySelector('#welcome-box, #infobox, #prefeitos-box, #marechais-box, #ilustres-box, #infobox-lenda, #tourism-infobox');
-                        if (anyBox) {
-                            wb.style.display = 'none';
-                            wb.setAttribute('aria-hidden', 'true');
-                        } else {
-                            wb.style.display = '';
-                            wb.removeAttribute('aria-hidden');
-                        }
-                    } catch (e) {
-                        console.warn('updateWelcomeBtnVisibility erro:', e);
-                    }
-                }
-
-                // Observador para monitorar quando infoboxes são adicionados/removidos
-                try {
-                    const mo = new MutationObserver(() => updateWelcomeBtnVisibility());
-                    mo.observe(document.body, { childList: true, subtree: true });
-                } catch (e) {
-                    console.warn('Falha ao criar MutationObserver para welcome-btn:', e);
-                }
-
-                // Chamada inicial para ajustar visibilidade com o estado atual da página
-                try { updateWelcomeBtnVisibility(); } catch (e) { }
-
-                if (wb) wb.onclick = () => { showWelcomeBox(); };
+                // Handler do botão 'Sobre o Projeto' removido (função showWelcomeBox comentada)
 
                 // Atacha handler ao botão estático 'Homens Ilustres'
                 const ilustresBtn = document.getElementById('ilustres-btn');
@@ -978,17 +941,16 @@
                             zebra += `<div style='background:${BOX_ALT};color:${BOX_FG};padding:2px 6px;border-radius:3px;'>${m.observacao}</div>`;
                         }
                         box.innerHTML = `
-                            <div style='background:${BOX_ALT};padding:8px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #666;margin:-14px -14px 12px -14px;'>
-                                <div style='font-size:17px;font-weight:bold;color:${BOX_FG};'>Marechais</div>
-                                <button id='marechais-close' style='background:#d33;color:#fff;border:none;border-radius:4px;padding:5px 10px;cursor:pointer;font-size:16px;'>✕</button>
-                            </div>
                             <div style='text-align:center;color:#fff;'>
                                 <b style='font-size:17px;'>${m.nome}</b><br><br>
                                 <img src='${foto}' alt='${m.nome}' class='img-prefeito' style='border:1.5px solid #aaa;background:'+BTN_BG+';'>
                                 <div style='margin-top:12px;text-align:left;font-size:15px;'>${zebra}</div>
-                                <div style='display:flex;justify-content:space-between;margin-top:12px;'>
+                                <div style='display:flex;justify-content:space-between;align-items:center;margin-top:12px;'>
                                     <button id='marechais-prev' style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>◀</button>
-                                    <span style='color:#fff;'>${idx + 1} / ${marechaisData.length}</span>
+                                    <div style='display:flex;align-items:center;gap:8px;'>
+                                        <span style='color:#fff;'>${idx + 1} / ${marechaisData.length}</span>
+                                        <button id='marechais-close' style='background:#d33;color:#fff;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:16px;font-weight:bold;'>✕</button>
+                                    </div>
                                     <button id='marechais-next' style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>▶</button>
                                 </div>
                             </div>`;
@@ -1119,17 +1081,16 @@
                         const it = ilustres[idx];
                         const foto = it.foto ? it.foto : 'placeholder_prefeito.jpg';
                         box.innerHTML = `
-                            <div style='background:${BOX_ALT};padding:8px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #666;margin:-14px -14px 12px -14px;'>
-                                <div style='font-size:17px;font-weight:bold;color:${BOX_FG};'>Homens Ilustres</div>
-                                <button id='ilustres-close' style='background:#d33;color:#fff;border:none;border-radius:4px;padding:5px 10px;cursor:pointer;font-size:16px;'>✕</button>
-                            </div>
                             <div style='text-align:center;color:#fff;'>
                                 <b style='font-size:17px;'>${it.nome}</b><br><br>
                                 <img src='${foto}' alt='${it.nome}' class='img-prefeito' style='border:1.5px solid #aaa;background:'+BTN_BG+';'>
                                 <div style='margin-top:12px;text-align:left;font-size:14px;color:#ddd;'>${it.resumo}</div>
-                                <div style='display:flex;justify-content:space-between;margin-top:12px;'>
+                                <div style='display:flex;justify-content:space-between;align-items:center;margin-top:12px;'>
                                     <button id='ilustres-prev' style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>◀</button>
-                                    <span style='color:#fff;'>${idx + 1} / ${ilustres.length}</span>
+                                    <div style='display:flex;align-items:center;gap:8px;'>
+                                        <span style='color:#fff;'>${idx + 1} / ${ilustres.length}</span>
+                                        <button id='ilustres-close' style='background:#d33;color:#fff;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:16px;font-weight:bold;'>✕</button>
+                                    </div>
                                     <button id='ilustres-next' style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>▶</button>
                                 </div>
                             </div>`;
