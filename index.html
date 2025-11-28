@@ -120,10 +120,9 @@
         </div>
     </div>
 
-    <!-- TESTE DE VERSÃO - CENTRO ABSOLUTO DA TELA -->
-    <div id="version-test" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;background:#ff0000;color:#fff;padding:20px 30px;border-radius:10px;font-size:24px;font-weight:bold;border:3px solid #fff;box-shadow:0 0 30px rgba(255,0,0,0.8);text-align:center;">
-        SÃO GABRIEL 3D<br>
-        <span style="font-size:32px;">VERSÃO 102</span>
+    <!-- Indicador discreto de versão -->
+    <div id="version-test" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;color:#ff0000;font-size:20px;font-weight:bold;opacity:0.8;text-shadow:2px 2px 4px rgba(0,0,0,0.9);pointer-events:none;">
+        v103
     </div>
 
     <script type="module">
@@ -1720,35 +1719,58 @@
                             if (modelViewerElement) {
                                 console.debug('[CLEANUP] Limpando model-viewer resources...');
                                 
-                                // 2. Descarregar modelo (libera memória GPU)
-                                modelViewerElement.src = '';
-                                
-                                // 3. Pausar renderização
-                                if (typeof modelViewerElement.pause === 'function') {
+                                // 2. Parar animação primeiro
+                                if (modelViewerElement.pause) {
                                     modelViewerElement.pause();
                                 }
                                 
-                                // 4. Remover do DOM
+                                // 3. Remover auto-rotate (libera listeners)
+                                modelViewerElement.removeAttribute('auto-rotate');
+                                modelViewerElement.removeAttribute('camera-controls');
+                                
+                                // 4. Descarregar modelo (libera memória GPU)
+                                modelViewerElement.src = '';
+                                
+                                // 5. Desconectar todos os observers internos
+                                if (modelViewerElement.disconnectedCallback) {
+                                    try {
+                                        modelViewerElement.disconnectedCallback();
+                                    } catch(e) { console.debug('[CLEANUP] disconnectedCallback error:', e); }
+                                }
+                                
+                                // 6. Remover do DOM
                                 if (modelViewerElement.parentNode) {
                                     modelViewerElement.parentNode.removeChild(modelViewerElement);
                                 }
                             }
                             
-                            // 5. Remover modal completo do DOM
+                            // 7. Remover modal completo do DOM
                             if (modal.parentNode) {
                                 modal.parentNode.removeChild(modal);
                             }
                             
-                            // 6. Forçar garbage collection (Safari/iOS)
+                            // 8. Forçar garbage collection e resetar Cesium (iOS Safari fix)
                             setTimeout(() => {
+                                // GC nativo (se disponível)
                                 if (window.gc) window.gc();
+                                
+                                // Forçar Cesium a re-renderizar (limpa estado)
+                                try {
+                                    viewer.scene.requestRender();
+                                } catch(e) {}
                             }, 100);
                             
-                            console.debug('[CLEANUP] Model-viewer cleanup completo');
+                            // 9. Garantir controles da câmera após delay (iOS precisa mais tempo)
+                            setTimeout(() => {
+                                restoreCameraControls();
+                                console.debug('[CLEANUP] Model-viewer cleanup completo (iOS optimized)');
+                            }, 250);
+                            
                         } catch (e) {
                             console.warn('[CLEANUP] Erro ao limpar model-viewer:', e);
                             // Fallback: apenas remove modal
                             if (modal.parentNode) modal.parentNode.removeChild(modal);
+                            restoreCameraControls();
                         }
                     }
 
