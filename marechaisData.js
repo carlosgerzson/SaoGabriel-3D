@@ -13,7 +13,7 @@ const marechaisData = [
         id: 2,
         nome: 'Marechal João Nepomuceno de Medeiros Mallet',
         resumo: 'Nascido em Bagé (1840), filho do Marechal Emílio Mallet, lutou na campanha do Uruguai e na Batalha de Tuiutí. Serviu em São Gabriel, cidade pela qual tinha grande apreço, afirmando que sua alma pertencia à terra gabrielense.',
-        foto: 'Mar_Joao_nepomuceno.jpg',
+        foto: 'Mar_Joao_Nepomuceno.jpg',
         observacao: ''
     },
     {

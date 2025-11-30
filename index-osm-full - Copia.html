@@ -122,7 +122,7 @@
 
     <!-- Indicador discreto de versão -->
     <div id="version-test" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;color:#ff0000;font-size:20px;font-weight:bold;opacity:0.8;text-shadow:2px 2px 4px rgba(0,0,0,0.9);pointer-events:none;">
-        v103
+        v102
     </div>
 
     <script type="module">
@@ -940,16 +940,16 @@
                             zebra += `<div style='background:${BOX_ALT};color:${BOX_FG};padding:2px 6px;border-radius:3px;'>${m.observacao}</div>`;
                         }
                         box.innerHTML = `
-                            <div style='position:relative;padding-top:6px;'>
-                                <button id='marechais-close' style='position:absolute;top:6px;right:6px;background:#d33;color:#fff;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:14px;font-weight:bold;'>✕</button>
-                            </div>
-                            <div style='text-align:center;color:#fff;padding-top:4px;'>
+                            <div style='text-align:center;color:#fff;'>
                                 <b style='font-size:17px;'>${m.nome}</b><br><br>
                                 <img src='${foto}' alt='${m.nome}' class='img-prefeito' style='border:1.5px solid #aaa;background:'+BTN_BG+';'>
                                 <div style='margin-top:12px;text-align:left;font-size:15px;'>${zebra}</div>
                                 <div style='display:flex;justify-content:space-between;align-items:center;margin-top:12px;'>
                                     <button id='marechais-prev' style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>◀</button>
-                                    <span style='color:#fff;'>${idx + 1} / ${marechaisData.length}</span>
+                                    <div style='display:flex;align-items:center;gap:8px;'>
+                                        <span style='color:#fff;'>${idx + 1} / ${marechaisData.length}</span>
+                                        <button id='marechais-close' style='background:#d33;color:#fff;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:16px;font-weight:bold;'>✕</button>
+                                    </div>
                                     <button id='marechais-next' style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>▶</button>
                                 </div>
                             </div>`;
@@ -1080,16 +1080,16 @@
                         const it = ilustres[idx];
                         const foto = it.foto ? it.foto : 'placeholder_prefeito.jpg';
                         box.innerHTML = `
-                            <div style='position:relative;padding-top:6px;'>
-                                <button id='ilustres-close' style='position:absolute;top:6px;right:6px;background:#d33;color:#fff;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:14px;font-weight:bold;'>✕</button>
-                            </div>
-                            <div style='text-align:center;color:#fff;padding-top:4px;'>
+                            <div style='text-align:center;color:#fff;'>
                                 <b style='font-size:17px;'>${it.nome}</b><br><br>
                                 <img src='${foto}' alt='${it.nome}' class='img-prefeito' style='border:1.5px solid #aaa;background:'+BTN_BG+';'>
                                 <div style='margin-top:12px;text-align:left;font-size:14px;color:#ddd;'>${it.resumo}</div>
                                 <div style='display:flex;justify-content:space-between;align-items:center;margin-top:12px;'>
                                     <button id='ilustres-prev' style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>◀</button>
-                                    <span style='color:#fff;'>${idx + 1} / ${ilustres.length}</span>
+                                    <div style='display:flex;align-items:center;gap:8px;'>
+                                        <span style='color:#fff;'>${idx + 1} / ${ilustres.length}</span>
+                                        <button id='ilustres-close' style='background:#d33;color:#fff;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:16px;font-weight:bold;'>✕</button>
+                                    </div>
                                     <button id='ilustres-next' style='background:'+BTN_BG+';color:'+BOX_FG+';border:1px solid #888;border-radius:4px;padding:2px 12px;cursor:pointer;'>▶</button>
                                 </div>
                             </div>`;
@@ -1517,11 +1517,6 @@
                             const tid = pickedObject.id.tourismId;
                             const p = tourismPoints.find(x => x.id === tid);
                             if (p) {
-                                // Verificar missão (encontra índice do ponto turístico)
-                                const idx = tourismPoints.indexOf(p);
-                                console.debug('[TURISMO] Clicou em:', p.name, 'índice:', idx);
-                                verificarMissaoClique('turismo', null, idx);
-                                
                                 // mostra um infobox simples
                                 let old = document.getElementById('tourism-infobox');
                                 if (old) old.parentNode.removeChild(old);
@@ -2170,90 +2165,43 @@
                 // ==================== SISTEMA DE MISSÕES ====================
                 // Array de 30 missões culturais (mix de edifícios, monumentos, lendas, turismo, marechais)
                 const missoesCulturais = [
-                    // Edifícios icônicos (11 missões)
                     { id: 'prefeitura', tipo: 'edificio', nome: 'Prefeitura Municipal', targetId: '494741651' },
-                    { id: 'matriz', tipo: 'edificio', nome: 'Igreja Matriz', targetId: '496683075' },
-                    { id: 'provincia', tipo: 'edificio', nome: 'Banco da Província', targetId: '496696965' },
-                    { id: 'banrisul', tipo: 'edificio', nome: 'Banrisul', targetId: '228625933' },
-                    { id: 'sobrado', tipo: 'edificio', nome: 'Sobrado Dom Pedro II', targetId: '496697003' },
-                    { id: 'galo', tipo: 'edificio', nome: 'Igreja do Galo', targetId: '502141804' },
-                    { id: 'maconaria', tipo: 'edificio', nome: 'Maçonaria Rocha Negra', targetId: '496696981' },
-                    { id: 'amarelo', tipo: 'edificio', nome: 'Casarão Amarelo', targetId: '496680298' },
-                    { id: 'guarani', tipo: 'edificio', nome: 'Clube Guarani', targetId: '505353915' },
-                    { id: 'comercial', tipo: 'edificio', nome: 'Clube Comercial', targetId: '496692933' },
-                    { id: 'museu_feb', tipo: 'edificio', nome: 'Museu Gaúcho da FEB', targetId: '262049292' },
-                    
-                    // Monumentos (3 missões)
-                    { id: 'monumento_feb', tipo: 'monumento', nome: 'Monumento Heróis da FEB', targetId: '111111111' },
-                    { id: 'monumento_sampaio', tipo: 'monumento', nome: 'Monumento Sampaio Marques Luz', targetId: '222222222' },
-                    { id: 'monumento_celestino', tipo: 'monumento', nome: 'Monumento Dr. Celestino', targetId: '333333333' },
-                    
-                    // Lendas (5 missões)
-                    { id: 'lenda_fuzilados', tipo: 'lenda', nome: 'Os Fuzilados', lendaIdx: 0 },
-                    { id: 'lenda_negrinho', tipo: 'lenda', nome: 'Negrinho da Sanga Funda', lendaIdx: 1 },
-                    { id: 'lenda_guapa', tipo: 'lenda', nome: 'Túmulo da Guapa', lendaIdx: 2 },
-                    { id: 'lenda_noivos', tipo: 'lenda', nome: 'Os Noivos', lendaIdx: 3 },
-                    { id: 'lenda_cigana', tipo: 'lenda', nome: 'A Cigana', lendaIdx: 4 },
-                    
-                    // Turismo (8 missões)
-                    { id: 'tour_galo', tipo: 'turismo', nome: 'Igreja do Galo', tourismIdx: 0 },
-                    { id: 'tour_6be', tipo: 'turismo', nome: '6º Batalhão de Engenharia', tourismIdx: 1 },
-                    { id: 'tour_sepe', tipo: 'turismo', nome: 'Sepé Tiaraju', tourismIdx: 2 },
-                    { id: 'tour_arcanjo', tipo: 'turismo', nome: 'Arcanjo São Gabriel', tourismIdx: 3 },
-                    { id: 'tour_prefeitura', tipo: 'turismo', nome: 'Palácio Plácido de Castro', tourismIdx: 4 },
-                    { id: 'tour_matriz', tipo: 'turismo', nome: 'Igreja Matriz', tourismIdx: 5 },
-                    { id: 'tour_feb', tipo: 'turismo', nome: 'Museu Gaúcho da FEB', tourismIdx: 6 },
-                    { id: 'tour_biblioteca', tipo: 'turismo', nome: 'Secretaria de Turismo', tourismIdx: 7 }
-                    
-                    // MISSÕES COMENTADAS - Dependem de navegação manual por carrossel (índice não confiável)
-                    // Futura implementação: detectar abertura do carrossel ao invés de índice específico
-                    
-                    // Marechais (5 missões - COMENTADAS: verificação por índice não funciona com navegação manual)
-                    // { id: 'marechal_joao_propio', tipo: 'marechal', nome: 'Marechal João Propício', marechalIdx: 0 },
-                    // { id: 'marechal_mallet', tipo: 'marechal', nome: 'Marechal Mallet', marechalIdx: 1 },
-                    // { id: 'marechal_fabio', tipo: 'marechal', nome: 'Marechal Fábio Azambuja', marechalIdx: 2 },
-                    // { id: 'marechal_hermes', tipo: 'marechal', nome: 'Marechal Hermes da Fonseca', marechalIdx: 3 },
-                    // { id: 'marechal_mascarenhas', tipo: 'marechal', nome: 'Marechal Mascarenhas de Moraes', marechalIdx: 4 },
-                    
-                    // Prefeitos (3 missões - COMENTADAS: verificação por índice não funciona com navegação manual)
-                    // { id: 'pref_sampaio', tipo: 'prefeito', nome: 'José Sampaio Marques Luz', prefeitoIdx: 12 },
-                    // { id: 'pref_celestino', tipo: 'prefeito', nome: 'Dr. Celestino Cavalheiro', prefeitoIdx: 3 },
-                    // { id: 'pref_baltazar', tipo: 'prefeito', nome: 'Baltazar Teixeira', prefeitoIdx: 19 },
-                    
-                    // Homens Ilustres (6 missões - COMENTADAS: verificação por índice não funciona com navegação manual)
-                    // { id: 'ilu_abbott', tipo: 'ilustre', nome: 'Fernando Abbott', ilustreIdx: 0 },
-                    // { id: 'ilu_alcides', tipo: 'ilustre', nome: 'Alcides Maia', ilustreIdx: 1 },
-                    // { id: 'ilu_leonel', tipo: 'ilustre', nome: 'Pe. Leonel Franca', ilustreIdx: 2 },
-                    // { id: 'ilu_assis', tipo: 'ilustre', nome: 'Joaquim Assis Brasil', ilustreIdx: 3 },
-                    // { id: 'ilu_placido', tipo: 'ilustre', nome: 'José Plácido de Castro', ilustreIdx: 4 },
-                    // { id: 'ilu_heron', tipo: 'ilustre', nome: 'Heron Domingues', ilustreIdx: 5 }
+                    { id: 'catedral', tipo: 'edificio', nome: 'Catedral São Gabriel', targetId: '494741636' },
+                    { id: 'america', tipo: 'edificio', nome: 'Cine América', targetId: '494741637' },
+                    { id: 'provincia', tipo: 'edificio', nome: 'Banco Província', targetId: '494741647' },
+                    { id: 'praca', tipo: 'edificio', nome: 'Hotel Praça', targetId: '494741646' },
+                    { id: 'monumento1', tipo: 'monumento', nome: 'Monumento ao Marechal', targetId: '111111111' },
+                    { id: 'monumento2', tipo: 'monumento', nome: 'Monumento Fuzilados', targetId: '222222222' },
+                    { id: 'monumento3', tipo: 'monumento', nome: 'Monumento Praça', targetId: '333333333' },
+                    { id: 'lenda0', tipo: 'lenda', nome: 'Lenda: Os Fuzilados', lendaIdx: 0 },
+                    { id: 'lenda1', tipo: 'lenda', nome: 'Lenda: Negrinho do Pastoreio', lendaIdx: 1 },
+                    { id: 'lenda2', tipo: 'lenda', nome: 'Lenda: Sepé Tiaraju', lendaIdx: 2 },
+                    { id: 'lenda3', tipo: 'lenda', nome: 'Lenda: Salamanca do Jarau', lendaIdx: 3 },
+                    { id: 'lenda4', tipo: 'lenda', nome: 'Lenda: Boitatá', lendaIdx: 4 },
+                    { id: 'turismo0', tipo: 'turismo', nome: 'Ponto Turístico 1', tourismIdx: 0 },
+                    { id: 'turismo1', tipo: 'turismo', nome: 'Ponto Turístico 2', tourismIdx: 1 },
+                    { id: 'turismo2', tipo: 'turismo', nome: 'Ponto Turístico 3', tourismIdx: 2 },
+                    { id: 'turismo3', tipo: 'turismo', nome: 'Ponto Turístico 4', tourismIdx: 3 },
+                    { id: 'turismo4', tipo: 'turismo', nome: 'Ponto Turístico 5', tourismIdx: 4 },
+                    { id: 'turismo5', tipo: 'turismo', nome: 'Ponto Turístico 6', tourismIdx: 5 },
+                    { id: 'turismo6', tipo: 'turismo', nome: 'Ponto Turístico 7', tourismIdx: 6 },
+                    { id: 'turismo7', tipo: 'turismo', nome: 'Ponto Turístico 8', tourismIdx: 7 },
+                    { id: 'marechal0', tipo: 'marechal', nome: 'Marechal 1', marechalIdx: 0 },
+                    { id: 'marechal1', tipo: 'marechal', nome: 'Marechal 2', marechalIdx: 1 },
+                    { id: 'marechal2', tipo: 'marechal', nome: 'Marechal 3', marechalIdx: 2 },
+                    { id: 'marechal3', tipo: 'marechal', nome: 'Marechal 4', marechalIdx: 3 },
+                    { id: 'marechal4', tipo: 'marechal', nome: 'Marechal 5', marechalIdx: 4 },
+                    { id: 'prefeito0', tipo: 'prefeito', nome: 'Prefeito Histórico 1', prefeitoIdx: 0 },
+                    { id: 'prefeito1', tipo: 'prefeito', nome: 'Prefeito Histórico 2', prefeitoIdx: 1 },
+                    { id: 'prefeito2', tipo: 'prefeito', nome: 'Prefeito Histórico 3', prefeitoIdx: 2 },
+                    { id: 'ilustre0', tipo: 'ilustre', nome: 'Homem Ilustre 1', ilustreIdx: 0 }
                 ];
-
-                console.debug('[MISSÕES] Total de missões carregadas:', missoesCulturais.length);
 
                 // LocalStorage: carregar progresso
                 function loadMissoesProgress() {
                     try {
                         const saved = localStorage.getItem('missoesProgress');
-                        if (saved) {
-                            const progress = JSON.parse(saved);
-                            // Limpar IDs inválidos (missões que não existem mais no array)
-                            const validIds = missoesCulturais.map(m => m.id);
-                            const cleaned = {};
-                            let removidos = 0;
-                            for (const id in progress) {
-                                if (validIds.includes(id)) {
-                                    cleaned[id] = progress[id];
-                                } else {
-                                    removidos++;
-                                }
-                            }
-                            if (removidos > 0) {
-                                console.debug('[MISSÕES] Limpeza automática: removidos', removidos, 'IDs inválidos do progresso');
-                                saveMissoesProgress(cleaned);
-                            }
-                            return cleaned;
-                        }
+                        if (saved) return JSON.parse(saved);
                     } catch (e) {
                         console.warn('Erro ao carregar progresso de missões:', e);
                     }
@@ -2271,268 +2219,70 @@
 
                 let missoesProgress = loadMissoesProgress();
                 let missoesPopupOpen = false;
-                let missaoAtiva = null; // Missão atual do jogador
-                let missaoModoAtivo = false; // Se está no modo de missão ativa
-
-                // Obter próxima missão não completa (sequencial)
-                function getNextMissao() {
-                    for (let missao of missoesCulturais) {
-                        if (!missoesProgress[missao.id]) {
-                            return missao;
-                        }
-                    }
-                    return null; // Todas completas!
-                }
-
-                // Sortear missão aleatória não completa
-                function getRandomMissao() {
-                    const incompletas = missoesCulturais.filter(m => !missoesProgress[m.id]);
-                    if (incompletas.length === 0) return null;
-                    return incompletas[Math.floor(Math.random() * incompletas.length)];
-                }
 
                 // Contador de missões completas
                 function getCompletedCount() {
                     return Object.values(missoesProgress).filter(v => v === true).length;
                 }
 
-                // Ativar missão (ao clicar no botão 🎯)
-                function ativarMissao() {
-                    missaoAtiva = getNextMissao();
-                    if (!missaoAtiva) {
-                        showVictoryScreen(); // Todas completas!
-                        return;
-                    }
-                    missaoModoAtivo = true;
-                    missoesPopupOpen = true;
-                    renderMissaoAtivaPopup();
-                }
-
-                // Verificar se clique corresponde à missão ativa
-                function verificarMissaoClique(tipo, targetId, idx) {
-                    if (!missaoModoAtivo || !missaoAtiva) {
-                        console.debug('[MISSÃO] Modo inativo ou sem missão ativa');
-                        return;
-                    }
-
-                    let acertou = false;
-
-                    // Verifica tipo + ID/índice
-                    if (tipo === 'edificio' || tipo === 'monumento') {
-                        // Aceita se for o targetId correto (independente do tipo declarado)
-                        acertou = (missaoAtiva.targetId === targetId);
-                    } else if (tipo === 'lenda') {
-                        acertou = (missaoAtiva.tipo === 'lenda' && missaoAtiva.lendaIdx === idx);
-                    } else if (tipo === 'turismo') {
-                        acertou = (missaoAtiva.tipo === 'turismo' && missaoAtiva.tourismIdx === idx);
-                        console.debug('[MISSÃO] Turismo check:', {
-                            missaoTipo: missaoAtiva.tipo,
-                            missaoIdx: missaoAtiva.tourismIdx,
-                            cliqueIdx: idx,
-                            match: acertou
-                        });
-                    } else if (tipo === 'marechal') {
-                        acertou = (missaoAtiva.tipo === 'marechal' && missaoAtiva.marechalIdx === idx);
-                    } else if (tipo === 'prefeito') {
-                        acertou = (missaoAtiva.tipo === 'prefeito' && missaoAtiva.prefeitoIdx === idx);
-                    } else if (tipo === 'ilustre') {
-                        acertou = (missaoAtiva.tipo === 'ilustre' && missaoAtiva.ilustreIdx === idx);
-                    }
-
-                    console.debug('[MISSÃO] Verificação:', { 
-                        tipo, 
-                        targetId, 
-                        idx, 
-                        missaoAtiva: missaoAtiva.nome, 
-                        missaoTipo: missaoAtiva.tipo,
-                        acertou 
-                    });
-
-                    if (acertou) {
-                        console.debug('[MISSÃO] ✅ ACERTOU!');
-                        completeMissaoAtiva();
-                    } else {
-                        console.debug('[MISSÃO] ❌ ERROU!');
-                        showErroFeedback();
-                    }
-                }
-
-                // Completar missão ativa
-                function completeMissaoAtiva() {
-                    if (!missaoAtiva) return;
-                    
-                    missoesProgress[missaoAtiva.id] = true;
+                // Marcar missão como completa
+                function completeMissao(missaoId) {
+                    if (missoesProgress[missaoId]) return; // já completa
+                    missoesProgress[missaoId] = true;
                     saveMissoesProgress(missoesProgress);
+                    showMissaoToast(missaoId);
+                    updateMissoesUI();
+                }
+
+                // Toast notification ao completar missão
+                function showMissaoToast(missaoId) {
+                    const missao = missoesCulturais.find(m => m.id === missaoId);
+                    if (!missao) return;
                     
-                    // Mostra GIF de sucesso + próxima missão
-                    showSucessoGif(() => {
-                        const completed = getCompletedCount();
-                        if (completed >= missoesCulturais.length) {
-                            showVictoryScreen();
-                        } else {
-                            missaoAtiva = getNextMissao();
-                            renderMissaoAtivaPopup();
-                        }
-                    });
-                }
+                    const toast = document.createElement('div');
+                    toast.style.position = 'fixed';
+                    toast.style.top = '20px';
+                    toast.style.left = '50%';
+                    toast.style.transform = 'translateX(-50%) translateY(-100px)';
+                    toast.style.background = '#2ecc71';
+                    toast.style.color = '#fff';
+                    toast.style.padding = '12px 24px';
+                    toast.style.borderRadius = '8px';
+                    toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+                    toast.style.zIndex = '9999';
+                    toast.style.fontSize = '16px';
+                    toast.style.fontWeight = 'bold';
+                    toast.style.transition = 'transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.5s';
+                    toast.style.opacity = '0';
+                    toast.innerHTML = `✅ Missão completa!<br><span style="font-size:14px;font-weight:normal;">${missao.nome}</span>`;
+                    document.body.appendChild(toast);
 
-                // Mostrar GIF de sucesso
-                function showSucessoGif(callback) {
-                    const popup = document.getElementById('missoes-popup');
-                    if (!popup) return;
+                    setTimeout(() => {
+                        toast.style.transform = 'translateX(-50%) translateY(0)';
+                        toast.style.opacity = '1';
+                    }, 10);
 
-                    const gifArea = document.getElementById('missao-gif-area');
-                    if (gifArea) {
-                        // GIF de celebração (confete)
-                        gifArea.innerHTML = `<img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHJ5cjN6dWp6eGZ5Yzh1YjBxM3VvZ3N6azRlemZ6Y3puemZ6Y3puZiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/kyLYXonQYYfwYDIeZl/giphy.gif?${Date.now()}" style="width:100%;height:120px;object-fit:contain;border-radius:8px;background:#2ecc71;">`;
-                        gifArea.style.display = 'block';
-
-                        setTimeout(() => {
-                            gifArea.style.display = 'none';
-                            gifArea.innerHTML = '';
-                            if (callback) callback();
-                        }, 2000);
-                    }
-                }
-
-                // Mostrar GIF de erro
-                function showErroFeedback() {
-                    const popup = document.getElementById('missoes-popup');
-                    if (!popup) return;
-
-                    const gifArea = document.getElementById('missao-gif-area');
-                    if (gifArea) {
-                        // GIF de X vermelho (erro)
-                        gifArea.innerHTML = `<img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNnZ5cjN6dWp6eGZ5Yzh1YjBxM3VvZ3N6azRlemZ6Y3puemZ6Y3puZiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/T7j5439wv9iq4/giphy.gif?${Date.now()}" style="width:100%;height:120px;object-fit:contain;border-radius:8px;background:#e74c3c;">`;
-                        gifArea.style.display = 'block';
-
-                        // Toast vermelho SEMPRE aparece
-                        const toast = document.createElement('div');
-                        toast.style.position = 'fixed';
-                        toast.style.top = '20px';
-                        toast.style.left = '50%';
-                        toast.style.transform = 'translateX(-50%)';
-                        toast.style.background = '#e74c3c';
-                        toast.style.color = '#fff';
-                        toast.style.padding = '12px 24px';
-                        toast.style.borderRadius = '8px';
-                        toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
-                        toast.style.zIndex = '99999';
-                        toast.style.fontSize = '15px';
-                        toast.style.fontWeight = 'bold';
+                    setTimeout(() => {
+                        toast.style.transform = 'translateX(-50%) translateY(-100px)';
                         toast.style.opacity = '0';
-                        toast.style.transition = 'opacity 0.3s';
-                        toast.innerHTML = `❌ Local errado!<br><span style="font-size:13px;font-weight:normal;">Procure: ${missaoAtiva.nome}</span>`;
-                        document.body.appendChild(toast);
-                        
-                        // Forçar aparição do toast
-                        setTimeout(() => {
-                            toast.style.opacity = '1';
-                        }, 10);
-
                         setTimeout(() => {
                             if (toast.parentNode) toast.parentNode.removeChild(toast);
-                        }, 2500);
-
-                        setTimeout(() => {
-                            gifArea.style.display = 'none';
-                            gifArea.innerHTML = '';
-                        }, 2000);
-                    }
+                        }, 500);
+                    }, 3000);
                 }
 
-                // Tela de vitória (todas as missões completas)
-                function showVictoryScreen() {
-                    missaoModoAtivo = false;
-                    const popup = document.getElementById('missoes-popup');
-                    if (!popup) return;
-
-                    popup.innerHTML = `
-                        <div style='text-align:center;padding:20px;'>
-                            <img src="https://media.giphy.com/media/g9582DNuQppxC/giphy.gif" style="width:100%;height:150px;object-fit:contain;border-radius:8px;margin-bottom:16px;">
-                            <div style='font-size:24px;font-weight:bold;color:#2ecc71;margin-bottom:12px;'>🎉 PARABÉNS! 🎉</div>
-                            <div style='font-size:16px;color:#ddd;margin-bottom:20px;'>Você completou todas as 40 missões culturais de São Gabriel!</div>
-                            <button id='victory-close' style='background:#3498db;color:#fff;border:none;border-radius:6px;padding:12px 24px;cursor:pointer;font-size:16px;font-weight:bold;'>🏆 Fechar</button>
-                        </div>
-                    `;
-
-                    document.getElementById('victory-close').onclick = () => {
-                        closeMissoesPopup();
-                    };
-                }
-
-                // Renderizar popup de missão ativa
-                function renderMissaoAtivaPopup() {
-                    let popup = document.getElementById('missoes-popup');
-                    if (!popup) {
-                        popup = document.createElement('div');
-                        popup.id = 'missoes-popup';
-                        popup.style.position = 'fixed';
-                        popup.style.bottom = '80px';
-                        popup.style.right = '20px';
-                        popup.style.width = '320px';
-                        popup.style.maxWidth = '90vw';
-                        popup.style.background = BOX_BG;
-                        popup.style.color = BOX_FG;
-                        popup.style.border = '1.5px solid #aaa';
-                        popup.style.borderRadius = '10px';
-                        popup.style.boxShadow = '0 8px 32px rgba(0,0,0,0.6)';
-                        popup.style.zIndex = '150';
-                        popup.style.padding = '14px';
-                        popup.style.transform = 'translateY(500px)';
-                        popup.style.opacity = '0';
-                        popup.style.transition = 'transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.4s';
-                        document.body.appendChild(popup);
-                    }
-
+                // Atualizar UI (botão flutuante + popup)
+                function updateMissoesUI() {
+                    const btn = document.getElementById('missoes-float-btn');
                     const completed = getCompletedCount();
-                    
-                    popup.innerHTML = `
-                        <div id='missao-gif-area' style='display:none;margin-bottom:12px;'></div>
-                        
-                        <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #666;'>
-                            <div style='font-size:18px;font-weight:bold;'>🎯 Missão Ativa</div>
-                            <button id='missoes-popup-close' style='background:#d33;color:#fff;border:none;border-radius:4px;padding:5px 10px;cursor:pointer;font-size:16px;'>✕</button>
-                        </div>
-                        
-                        <div style='background:${BOX_ALT};padding:16px;border-radius:8px;border:2px solid #3498db;margin-bottom:12px;'>
-                            <div style='font-size:16px;font-weight:bold;color:#3498db;margin-bottom:8px;'>📍 ${missaoAtiva.nome}</div>
-                            <div style='font-size:12px;color:#aaa;'>Tipo: ${missaoAtiva.tipo}</div>
-                        </div>
-                        
-                        <div style='margin-bottom:12px;font-size:14px;color:#bbb;'>
-                            Progresso: <b style='color:#2ecc71;'>${completed}/27</b> ✅
-                        </div>
-                        
-                        <div style='display:flex;gap:8px;'>
-                            <button id='missao-pular' style='flex:1;background:#f39c12;color:#fff;border:none;border-radius:6px;padding:10px;cursor:pointer;font-size:14px;font-weight:bold;'>⏩ Pular</button>
-                            <button id='missao-ver-todas' style='flex:1;background:${BTN_BG};color:${BOX_FG};border:1px solid #666;border-radius:6px;padding:10px;cursor:pointer;font-size:14px;'>📋 Ver Todas</button>
-                        </div>
-                    `;
-
-                    document.getElementById('missoes-popup-close').onclick = () => {
-                        missaoModoAtivo = false;
-                        closeMissoesPopup();
-                    };
-
-                    document.getElementById('missao-pular').onclick = () => {
-                        missaoAtiva = getRandomMissao();
-                        if (missaoAtiva) renderMissaoAtivaPopup();
-                    };
-
-                    document.getElementById('missao-ver-todas').onclick = () => {
-                        renderMissoesListaCompleta();
-                    };
-
-                    // Animação de entrada
-                    setTimeout(() => {
-                        popup.style.transform = 'translateY(0)';
-                        popup.style.opacity = '1';
-                    }, 10);
+                    if (btn) {
+                        btn.innerHTML = `🎯<br><span style="font-size:11px;">${completed}/30</span>`;
+                    }
+                    if (missoesPopupOpen) renderMissoesPopup();
                 }
 
-                // Renderizar lista completa de missões (modo consulta)
-                function renderMissoesListaCompleta() {
+                // Renderizar popup de missões
+                function renderMissoesPopup() {
                     let popup = document.getElementById('missoes-popup');
                     if (!popup) {
                         popup = document.createElement('div');
@@ -2542,6 +2292,7 @@
                         popup.style.right = '20px';
                         popup.style.width = '320px';
                         popup.style.maxWidth = '90vw';
+                        popup.style.maxHeight = '60vh';
                         popup.style.background = BOX_BG;
                         popup.style.color = BOX_FG;
                         popup.style.border = '1.5px solid #aaa';
@@ -2549,6 +2300,7 @@
                         popup.style.boxShadow = '0 8px 32px rgba(0,0,0,0.6)';
                         popup.style.zIndex = '150';
                         popup.style.padding = '14px';
+                        popup.style.overflowY = 'auto';
                         popup.style.transform = 'translateY(500px)';
                         popup.style.opacity = '0';
                         popup.style.transition = 'transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.4s';
@@ -2558,13 +2310,13 @@
                     const completed = getCompletedCount();
                     let html = `
                         <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #666;'>
-                            <div style='font-size:18px;font-weight:bold;'>📋 Todas as Missões</div>
+                            <div style='font-size:18px;font-weight:bold;'>🎯 Missões</div>
                             <button id='missoes-popup-close' style='background:#d33;color:#fff;border:none;border-radius:4px;padding:5px 10px;cursor:pointer;font-size:16px;'>✕</button>
                         </div>
                         <div style='margin-bottom:12px;font-size:14px;color:#bbb;'>
-                            Progresso: <b style='color:#2ecc71;'>${completed}/27</b> completas
+                            Progresso: <b style='color:#2ecc71;'>${completed}/30</b> completas
                         </div>
-                        <div style='max-height:50vh;overflow-y:auto;display:flex;flex-direction:column;gap:6px;'>
+                        <div style='display:flex;flex-direction:column;gap:8px;'>
                     `;
 
                     missoesCulturais.forEach(missao => {
@@ -2573,48 +2325,27 @@
                         const icon = isComplete ? '✅' : '⬜';
                         html += `
                             <div style='background:${bgColor};padding:8px 10px;border-radius:6px;display:flex;align-items:center;gap:10px;border:1px solid ${isComplete ? '#2ecc71' : '#555'};'>
-                                <span style='font-size:18px;'>${icon}</span>
+                                <span style='font-size:20px;'>${icon}</span>
                                 <div style='flex:1;'>
-                                    <div style='font-size:13px;font-weight:${isComplete ? 'normal' : 'bold'};color:${isComplete ? '#aaa' : BOX_FG};${isComplete ? 'text-decoration:line-through;' : ''}'>${missao.nome}</div>
-                                    <div style='font-size:10px;color:#888;'>${missao.tipo}</div>
+                                    <div style='font-size:14px;font-weight:${isComplete ? 'normal' : 'bold'};color:${isComplete ? '#aaa' : BOX_FG};${isComplete ? 'text-decoration:line-through;' : ''}'>${missao.nome}</div>
+                                    <div style='font-size:11px;color:#888;'>${missao.tipo}</div>
                                 </div>
                             </div>
                         `;
                     });
 
-                    html += `
-                        </div>
-                        <div style='margin-top:12px;padding-top:12px;border-top:1px solid #666;'>
-                            <button id='missoes-resetar' style='width:100%;background:#e74c3c;color:#fff;border:none;border-radius:6px;padding:10px;cursor:pointer;font-size:14px;font-weight:bold;'>🔄 Resetar Progresso</button>
-                        </div>
-                    `;
+                    html += `</div>`;
                     popup.innerHTML = html;
-
-                    // Anima entrada
-                    setTimeout(() => {
-                        popup.style.transform = 'translateY(0)';
-                        popup.style.opacity = '1';
-                    }, 50);
 
                     document.getElementById('missoes-popup-close').onclick = () => {
                         closeMissoesPopup();
                     };
 
-                    document.getElementById('missoes-resetar').onclick = () => {
-                        if (confirm('Tem certeza que deseja resetar todo o progresso das missões? Esta ação não pode ser desfeita!')) {
-                            missoesProgress = {};
-                            saveMissoesProgress(missoesProgress);
-                            missaoAtiva = null;
-                            missaoModoAtivo = false;
-                            // Atualiza botão flutuante
-                            const btn = document.getElementById('missoes-float-btn');
-                            if (btn) {
-                                btn.innerHTML = `🎯<br><span style="font-size:11px;">0/27</span>`;
-                            }
-                            renderMissoesListaCompleta();
-                            alert('✅ Progresso resetado com sucesso!');
-                        }
-                    };
+                    // Animação de entrada
+                    setTimeout(() => {
+                        popup.style.transform = 'translateY(0)';
+                        popup.style.opacity = '1';
+                    }, 10);
                 }
 
                 function closeMissoesPopup() {
@@ -2651,7 +2382,7 @@
                 missoesFloatBtn.style.justifyContent = 'center';
                 missoesFloatBtn.style.lineHeight = '1';
                 missoesFloatBtn.style.transition = 'transform 0.2s, box-shadow 0.2s';
-                missoesFloatBtn.innerHTML = `🎯<br><span style="font-size:11px;">${getCompletedCount()}/27</span>`;
+                missoesFloatBtn.innerHTML = `🎯<br><span style="font-size:11px;">${getCompletedCount()}/30</span>`;
                 missoesFloatBtn.onmouseover = () => {
                     missoesFloatBtn.style.transform = 'scale(1.1)';
                     missoesFloatBtn.style.boxShadow = '0 6px 16px rgba(0,0,0,0.5)';
@@ -2661,75 +2392,80 @@
                     missoesFloatBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.4)';
                 };
                 missoesFloatBtn.onclick = () => {
-                    console.debug('[MISSÕES] Clique no botão flutuante. Popup aberto?', missoesPopupOpen);
                     if (missoesPopupOpen) {
-                        missaoModoAtivo = false;
                         closeMissoesPopup();
                     } else {
-                        // Verifica se há missões incompletas
-                        const nextMissao = getNextMissao();
-                        console.debug('[MISSÕES] Próxima missão disponível:', nextMissao);
-                        if (!nextMissao) {
-                            // Tudo completo: mostra lista completa para permitir reset
-                            console.debug('[MISSÕES] Tudo completo! Abrindo lista completa...');
-                            missoesPopupOpen = true;
-                            renderMissoesListaCompleta();
-                        } else {
-                            // Há missões pendentes: inicia modo ativo
-                            console.debug('[MISSÕES] Iniciando missão:', nextMissao.nome);
-                            ativarMissao();
-                        }
+                        missoesPopupOpen = true;
+                        renderMissoesPopup();
                     }
                 };
                 document.body.appendChild(missoesFloatBtn);
 
-                // Hooks para verificação de missões (só ativa se modo missão estiver ativo)
+                // Auto-detecção: hook nos handlers de clique existentes
                 // Edifícios/Monumentos: ao abrir infobox/modal
                 const originalShowInfobox = showInfobox;
                 showInfobox = function(id) {
                     originalShowInfobox(id);
-                    verificarMissaoClique('edificio', id, null);
-                    verificarMissaoClique('monumento', id, null);
+                    // Verifica se há missão correspondente
+                    const missao = missoesCulturais.find(m => m.targetId === id);
+                    if (missao) completeMissao(missao.id);
                 };
 
                 const originalShowModelViewerModal = showModelViewerModal;
                 showModelViewerModal = function(id, uri, title, description, images) {
                     originalShowModelViewerModal(id, uri, title, description, images);
-                    verificarMissaoClique('edificio', id, null);
-                    verificarMissaoClique('monumento', id, null);
+                    const missao = missoesCulturais.find(m => m.targetId === id);
+                    if (missao) completeMissao(missao.id);
                 };
 
                 // Lendas: ao abrir infobox de lenda
                 const originalShowLendaInfobox = showLendaInfobox;
                 showLendaInfobox = function(idx) {
                     originalShowLendaInfobox(idx);
-                    verificarMissaoClique('lenda', null, idx);
+                    const missao = missoesCulturais.find(m => m.tipo === 'lenda' && m.lendaIdx === idx);
+                    if (missao) completeMissao(missao.id);
                 };
 
                 // Marechais: ao abrir carrossel
                 const originalShowMarechaisCarousel = showMarechaisCarousel;
                 showMarechaisCarousel = function(startIndex) {
                     originalShowMarechaisCarousel(startIndex);
-                    verificarMissaoClique('marechal', null, startIndex || 0);
+                    const missao = missoesCulturais.find(m => m.tipo === 'marechal' && m.marechalIdx === (startIndex || 0));
+                    if (missao) completeMissao(missao.id);
                 };
 
                 // Prefeitos: ao abrir carrossel
                 const originalShowPrefeitosCarousel = showPrefeitosCarousel;
                 showPrefeitosCarousel = function(startIndex) {
                     originalShowPrefeitosCarousel(startIndex);
-                    verificarMissaoClique('prefeito', null, startIndex || 0);
+                    const missao = missoesCulturais.find(m => m.tipo === 'prefeito' && m.prefeitoIdx === (startIndex || 0));
+                    if (missao) completeMissao(missao.id);
                 };
 
                 // Homens Ilustres: ao abrir carrossel
                 const originalShowIlustresCarousel = showIlustresCarousel;
                 showIlustresCarousel = function(startIndex) {
                     originalShowIlustresCarousel(startIndex);
-                    verificarMissaoClique('ilustre', null, startIndex || 0);
+                    const missao = missoesCulturais.find(m => m.tipo === 'ilustre' && m.ilustreIdx === (startIndex || 0));
+                    if (missao) completeMissao(missao.id);
                 };
 
-                // Nota: Turismo já tem verificação direta no handler de clique (linha ~1520)
+                // Turismo: ao clicar em marcador (via handler de picker)
+                // Já é detectado pelo handler existente que chama showTourismInfobox
+                // Adicionaremos hook no showTourismInfobox se existir
+                if (typeof showTourismInfobox === 'function') {
+                    const originalShowTourismInfobox = showTourismInfobox;
+                    showTourismInfobox = function(p) {
+                        originalShowTourismInfobox(p);
+                        const idx = tourismPoints.indexOf(p);
+                        if (idx >= 0) {
+                            const missao = missoesCulturais.find(m => m.tipo === 'turismo' && m.tourismIdx === idx);
+                            if (missao) completeMissao(missao.id);
+                        }
+                    };
+                }
 
-                console.debug('[MISSÕES] Sistema de Missão Ativa inicializado com', missoesCulturais.length, 'missões. Progresso:', getCompletedCount(), '/', missoesCulturais.length);
+                console.debug('[MISSÕES] Sistema inicializado com', missoesCulturais.length, 'missões. Progresso:', getCompletedCount(), '/ 30');
 
                 // ==================== FIM SISTEMA DE MISSÕES ====================
 
