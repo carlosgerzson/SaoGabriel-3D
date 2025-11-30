@@ -184,6 +184,15 @@
 
         let viewer;
         async function init() {
+            // Detectar iOS/Safari para aplicar otimizações específicas
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            const isIOSSafari = isIOS || isSafari;
+            
+            if (isIOSSafari) {
+                console.warn('🍎 iOS/Safari detectado - aplicando otimizações WebGL');
+            }
+            
             // cores padrão para caixas (padronizar facilmente aqui)
             const BOX_BG = '#333';
             const BOX_FG = '#f5f5f5';
@@ -1722,7 +1731,7 @@
                             // 1. Encontrar e limpar o elemento model-viewer
                             const modelViewerElement = modal.querySelector('model-viewer');
                             if (modelViewerElement) {
-                                console.debug('[CLEANUP] Limpando model-viewer resources...');
+                                console.debug('[CLEANUP iOS] Iniciando limpeza profunda do model-viewer...');
                                 
                                 // 2. Parar animação primeiro
                                 if (modelViewerElement.pause) {
@@ -1736,46 +1745,98 @@
                                 // 4. Descarregar modelo (libera memória GPU)
                                 modelViewerElement.src = '';
                                 
-                                // 5. Desconectar todos os observers internos
+                                // ========== NOVAS ESTRATÉGIAS iOS ==========
+                                
+                                // 5. FORCE CANVAS CLEANUP (iOS Safari WebGL leak fix)
+                                // Safari iOS não libera contextos WebGL automaticamente
+                                try {
+                                    const canvas = modelViewerElement.shadowRoot?.querySelector('canvas');
+                                    if (canvas) {
+                                        console.debug('[CLEANUP iOS] Limpando canvas WebGL...');
+                                        const gl = canvas.getContext('webgl') || canvas.getContext('webgl2') || canvas.getContext('experimental-webgl');
+                                        if (gl) {
+                                            // Libera todas as extensões WebGL
+                                            const loseContext = gl.getExtension('WEBGL_lose_context');
+                                            if (loseContext) {
+                                                loseContext.loseContext();
+                                                console.debug('[CLEANUP iOS] WebGL context perdido forçadamente');
+                                            }
+                                            // Limpa buffers
+                                            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+                                            gl.flush();
+                                            gl.finish();
+                                        }
+                                        // Remove canvas do DOM
+                                        canvas.width = 1;
+                                        canvas.height = 1;
+                                        if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+                                    }
+                                } catch (e) {
+                                    console.debug('[CLEANUP iOS] Canvas cleanup error:', e);
+                                }
+                                
+                                // 6. DESABILITAR TEMPORARIAMENTE CESIUM (iOS conflict prevention)
+                                // Evita conflito de contextos WebGL simultâneos
+                                try {
+                                    console.debug('[CLEANUP iOS] Pausando Cesium temporariamente...');
+                                    viewer.scene.screenSpaceCameraController.enableInputs = false;
+                                    viewer.useDefaultRenderLoop = false;
+                                } catch(e) {
+                                    console.debug('[CLEANUP iOS] Cesium pause error:', e);
+                                }
+                                
+                                // 7. Desconectar todos os observers internos
                                 if (modelViewerElement.disconnectedCallback) {
                                     try {
                                         modelViewerElement.disconnectedCallback();
-                                    } catch(e) { console.debug('[CLEANUP] disconnectedCallback error:', e); }
+                                    } catch(e) { console.debug('[CLEANUP iOS] disconnectedCallback error:', e); }
                                 }
                                 
-                                // 6. Remover do DOM
+                                // 8. Remover do DOM
                                 if (modelViewerElement.parentNode) {
                                     modelViewerElement.parentNode.removeChild(modelViewerElement);
                                 }
                             }
                             
-                            // 7. Remover modal completo do DOM
+                            // 9. Remover modal completo do DOM
                             if (modal.parentNode) {
                                 modal.parentNode.removeChild(modal);
                             }
                             
-                            // 8. Forçar garbage collection e resetar Cesium (iOS Safari fix)
+                            // 10. REATIVAR CESIUM APÓS DELAY (iOS restoration)
                             setTimeout(() => {
+                                try {
+                                    console.debug('[CLEANUP iOS] Reativando Cesium...');
+                                    viewer.useDefaultRenderLoop = true;
+                                    viewer.scene.screenSpaceCameraController.enableInputs = true;
+                                    // Força re-render completo
+                                    viewer.scene.requestRender();
+                                    viewer.render();
+                                } catch(e) {
+                                    console.debug('[CLEANUP iOS] Cesium reactivation error:', e);
+                                }
+                                
                                 // GC nativo (se disponível)
                                 if (window.gc) window.gc();
-                                
-                                // Forçar Cesium a re-renderizar (limpa estado)
-                                try {
-                                    viewer.scene.requestRender();
-                                } catch(e) {}
-                            }, 100);
+                            }, 150);
                             
-                            // 9. Garantir controles da câmera após delay (iOS precisa mais tempo)
+                            // 11. RESTAURAR CONTROLES COM DELAY MAIOR (iOS needs more time)
                             setTimeout(() => {
                                 restoreCameraControls();
-                                console.debug('[CLEANUP] Model-viewer cleanup completo (iOS optimized)');
-                            }, 250);
+                                console.debug('[CLEANUP iOS] Cleanup completo - controles restaurados');
+                            }, 400);
                             
                         } catch (e) {
-                            console.warn('[CLEANUP] Erro ao limpar model-viewer:', e);
-                            // Fallback: apenas remove modal
-                            if (modal.parentNode) modal.parentNode.removeChild(modal);
-                            restoreCameraControls();
+                            console.warn('[CLEANUP iOS] Erro crítico ao limpar:', e);
+                            // Fallback: força restauração
+                            try {
+                                if (modal.parentNode) modal.parentNode.removeChild(modal);
+                                viewer.useDefaultRenderLoop = true;
+                                viewer.scene.screenSpaceCameraController.enableInputs = true;
+                                restoreCameraControls();
+                            } catch(e2) {
+                                console.error('[CLEANUP iOS] Fallback falhou:', e2);
+                            }
                         }
                     }
 
