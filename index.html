@@ -254,24 +254,46 @@
 
                 // Visão global e depois área de interesse (centro da praça)
                 const pracaCentro = { lon: -54.316822, lat: -30.344800, altura: 600 };
-                viewer.camera.setView({
-                    destination: Cesium.Cartesian3.fromDegrees(pracaCentro.lon, pracaCentro.lat, 20000000),
-                });
-                viewer.camera.flyTo({
-                    destination: Cesium.Cartesian3.fromDegrees(pracaCentro.lon, pracaCentro.lat, pracaCentro.altura),
-                    orientation: {
-                        heading: Cesium.Math.toRadians(0.0),
-                        pitch: Cesium.Math.toRadians(-45.0),
-                        roll: 0.0
-                    },
-                    duration: 3.5,
-                    easingFunction: Cesium.EasingFunction.QUADRATIC_IN_OUT,
-                    complete: function () {
-                        // Caixa de boas-vindas DESABILITADA (pedido dos usuários)
-                        // Usuário pode abrir manualmente clicando no botão "São Gabriel 3D"
-                        // try { showWelcomeBox(); } catch (e) { console.warn('Erro ao mostrar welcome box', e); }
+                
+                // RESTAURAR CÂMERA APÓS RELOAD iOS (se disponível)
+                const savedCamera = sessionStorage.getItem('cesium_camera_restore');
+                if (savedCamera) {
+                    try {
+                        const cam = JSON.parse(savedCamera);
+                        console.debug('[iOS RESTORE] Restaurando posição da câmera:', cam);
+                        viewer.camera.setView({
+                            destination: Cesium.Cartesian3.fromDegrees(cam.lon, cam.lat, cam.height),
+                            orientation: {
+                                heading: cam.heading,
+                                pitch: cam.pitch,
+                                roll: cam.roll
+                            }
+                        });
+                        sessionStorage.removeItem('cesium_camera_restore'); // Limpa após uso
+                    } catch(e) {
+                        console.warn('[iOS RESTORE] Erro ao restaurar câmera:', e);
                     }
-                });
+                } else {
+                    // Animação normal (primeira carga)
+                    viewer.camera.setView({
+                        destination: Cesium.Cartesian3.fromDegrees(pracaCentro.lon, pracaCentro.lat, 20000000),
+                    });
+                    viewer.camera.flyTo({
+                        destination: Cesium.Cartesian3.fromDegrees(pracaCentro.lon, pracaCentro.lat, pracaCentro.altura),
+                        orientation: {
+                            heading: Cesium.Math.toRadians(0.0),
+                            pitch: Cesium.Math.toRadians(-45.0),
+                            roll: 0.0
+                        },
+                        duration: 3.5,
+                        easingFunction: Cesium.EasingFunction.QUADRATIC_IN_OUT,
+                        complete: function () {
+                            // Caixa de boas-vindas DESABILITADA (pedido dos usuários)
+                            // Usuário pode abrir manualmente clicando no botão "São Gabriel 3D"
+                            // try { showWelcomeBox(); } catch (e) { console.warn('Erro ao mostrar welcome box', e); }
+                        }
+                    });
+                }
 
                 // Garante que as sombras estejam ativas
                 viewer.shadows = true;
@@ -1811,7 +1833,58 @@
                                 modal.parentNode.removeChild(modal);
                             }
                             
-                            // 10. REATIVAR CESIUM APÓS DELAY (iOS restoration)
+                            // ========== iOS CRITICAL FIX: FORCE PAGE RELOAD ==========
+                            // Safari iOS trava event loop após WebGL - única solução confiável
+                            if (isIOSSafari) {
+                                console.warn('[iOS FIX] Detectado iOS Safari - preparando reload...');
+                                
+                                // Salvar estado antes do reload
+                                const currentCamera = {
+                                    position: viewer.camera.position.clone(),
+                                    direction: viewer.camera.direction.clone(),
+                                    up: viewer.camera.up.clone()
+                                };
+                                sessionStorage.setItem('cesium_camera_restore', JSON.stringify({
+                                    lon: Cesium.Math.toDegrees(viewer.camera.positionCartographic.longitude),
+                                    lat: Cesium.Math.toDegrees(viewer.camera.positionCartographic.latitude),
+                                    height: viewer.camera.positionCartographic.height,
+                                    heading: viewer.camera.heading,
+                                    pitch: viewer.camera.pitch,
+                                    roll: viewer.camera.roll
+                                }));
+                                
+                                // Mostrar aviso ao usuário
+                                const reloadNotice = document.createElement('div');
+                                reloadNotice.style.cssText = `
+                                    position: fixed;
+                                    top: 50%;
+                                    left: 50%;
+                                    transform: translate(-50%, -50%);
+                                    background: rgba(52, 152, 219, 0.98);
+                                    color: #fff;
+                                    padding: 24px 32px;
+                                    border-radius: 12px;
+                                    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+                                    z-index: 99999;
+                                    text-align: center;
+                                    font-size: 16px;
+                                    font-weight: bold;
+                                `;
+                                reloadNotice.innerHTML = `
+                                    🔄 Recarregando página...<br>
+                                    <span style="font-size:13px;font-weight:normal;opacity:0.9;">Necessário para iOS Safari</span>
+                                `;
+                                document.body.appendChild(reloadNotice);
+                                
+                                // Reload após 1 segundo
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 1000);
+                                
+                                return; // Não executa código abaixo
+                            }
+                            
+                            // 10. REATIVAR CESIUM APÓS DELAY (Non-iOS normal flow)
                             setTimeout(() => {
                                 try {
                                     console.debug('[CLEANUP iOS] Reativando Cesium...');
