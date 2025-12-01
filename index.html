@@ -2530,88 +2530,77 @@
                     });
                 }
 
-                // Mostrar GIF de sucesso
+                // Mostrar GIF de sucesso (compacto, aparência de popup)
                 function showSucessoGif(callback) {
-                    // Criar overlay fullscreen para GIF (z-index acima do modal)
-                    const gifOverlay = document.createElement('div');
-                    gifOverlay.id = 'gif-sucesso-overlay';
-                    gifOverlay.style.cssText = `
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: 100vw;
-                        height: 100vh;
-                        background: rgba(46, 204, 113, 0.25);
-                        z-index: 20001;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        pointer-events: none;
-                    `;
-                    gifOverlay.innerHTML = `
-                        <div style="background:rgba(46,204,113,0.95);padding:24px;border-radius:16px;box-shadow:0 12px 48px rgba(0,0,0,0.8);border:3px solid #27ae60;">
-                            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHJ5cjN6dWp6eGZ5Yzh1YjBxM3VvZ3N6azRlemZ6Y3puemZ6Y3puZiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/kyLYXonQYYfwYDIeZl/giphy.gif?${Date.now()}" style="width:280px;height:280px;object-fit:contain;border-radius:12px;">
-                            <div style="text-align:center;color:#fff;font-size:28px;font-weight:bold;margin-top:16px;text-shadow:2px 2px 6px rgba(0,0,0,0.8);">✅ MISSÃO COMPLETA!</div>
-                        </div>
-                    `;
-                    document.body.appendChild(gifOverlay);
-
-                    // Remover após 2.5s e executar callback
                     setTimeout(() => {
-                        gifOverlay.remove();
-                        if (callback) callback();
-                    }, 2500);
+                        const gifOverlay = document.createElement('div');
+                        gifOverlay.id = 'gif-sucesso-overlay';
+                        gifOverlay.style.cssText = `
+                            position: fixed;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                            background: ${BOX_ALT};
+                            padding: 16px;
+                            border-radius: 12px;
+                            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+                            border: 2px solid #27ae60;
+                            z-index: 20001;
+                            text-align: center;
+                            pointer-events: none;
+                            max-width: 90vw;
+                        `;
+                        gifOverlay.innerHTML = `
+                            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHJ5cjN6dWp6eGZ5Yzh1YjBxM3VvZ3N6azRlemZ6Y3puemZ6Y3puZiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/kyLYXonQYYfwYDIeZl/giphy.gif?${Date.now()}" style="width:150px;height:150px;object-fit:contain;border-radius:8px;margin-bottom:8px;">
+                            <div style="color:#27ae60;font-size:18px;font-weight:bold;">✅ MISSÃO COMPLETA!</div>
+                        `;
+                        document.body.appendChild(gifOverlay);
+
+                        setTimeout(() => {
+                            gifOverlay.remove();
+                            if (callback) callback();
+                        }, 2000);
+                    }, 1000);
                 }
 
-                // Mostrar feedback de erro
+                // Mostrar feedback de erro (compacto, aparência de popup)
                 function showErroFeedback() {
-                    // Criar overlay fullscreen para GIF de erro (z-index acima do modal)
-                    const gifOverlay = document.createElement('div');
-                    gifOverlay.id = 'gif-erro-overlay';
-                    gifOverlay.style.cssText = `
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: 100vw;
-                        height: 100vh;
-                        background: rgba(231, 76, 60, 0.25);
-                        z-index: 20002;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        pointer-events: none;
-                    `;
-                    gifOverlay.innerHTML = `
-                        <div style="background:rgba(231,76,60,0.95);padding:24px;border-radius:16px;box-shadow:0 12px 48px rgba(0,0,0,0.8);border:3px solid #c0392b;">
-                            <div style="width:280px;height:280px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);border-radius:12px;position:relative;overflow:hidden;">
-                                <div style="position:absolute;width:100%;height:100%;">
-                                    <img src="https://media.tenor.com/HTw-Du0BdgAAAAAj/x-wrong.gif" onerror="this.style.display='none'" style="width:100%;height:100%;object-fit:cover;opacity:0.3;">
-                                </div>
-                                <div style="position:relative;z-index:1;width:200px;height:200px;">
-                                    <div style="position:absolute;top:50%;left:50%;width:24px;height:160px;background:#fff;box-shadow:0 4px 12px rgba(0,0,0,0.4);transform:translate(-50%,-50%) rotate(45deg);border-radius:12px;animation:shake1 0.5s ease-in-out infinite;"></div>
-                                    <div style="position:absolute;top:50%;left:50%;width:24px;height:160px;background:#fff;box-shadow:0 4px 12px rgba(0,0,0,0.4);transform:translate(-50%,-50%) rotate(-45deg);border-radius:12px;animation:shake2 0.5s ease-in-out infinite;"></div>
-                                </div>
-                            </div>
-                            <div style="text-align:center;color:#fff;font-size:28px;font-weight:bold;margin-top:16px;text-shadow:2px 2px 6px rgba(0,0,0,0.8);">❌ Local Errado!</div>
-                            <div style="text-align:center;color:#fff;font-size:18px;margin-top:8px;text-shadow:2px 2px 4px rgba(0,0,0,0.6);">Procure: ${missaoAtiva ? missaoAtiva.nome : '...'}</div>
-                        </div>
-                        <style>
-                            @keyframes shake1 {
-                                0%, 100% { transform: translate(-50%,-50%) rotate(45deg); }
-                                50% { transform: translate(-50%,-50%) rotate(48deg); }
-                            }
-                            @keyframes shake2 {
-                                0%, 100% { transform: translate(-50%,-50%) rotate(-45deg); }
-                                50% { transform: translate(-50%,-50%) rotate(-42deg); }
-                            }
-                        </style>
-                    `;
-                    document.body.appendChild(gifOverlay);
-
-                    // Remover após 2s (erro é mais rápido)
                     setTimeout(() => {
-                        gifOverlay.remove();
-                    }, 2000);
+                        const gifOverlay = document.createElement('div');
+                        gifOverlay.id = 'gif-erro-overlay';
+                        gifOverlay.style.cssText = `
+                            position: fixed;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                            background: ${BOX_ALT};
+                            padding: 16px;
+                            border-radius: 12px;
+                            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+                            border: 2px solid #c0392b;
+                            z-index: 20002;
+                            text-align: center;
+                            pointer-events: none;
+                            max-width: 90vw;
+                        `;
+                        gifOverlay.innerHTML = `
+                            <div style="font-size:80px;margin-bottom:8px;animation:shake 0.5s ease-in-out infinite;">❌</div>
+                            <div style="color:#e74c3c;font-size:18px;font-weight:bold;margin-bottom:4px;">Local Errado!</div>
+                            <div style="color:#aaa;font-size:14px;">Procure: ${missaoAtiva ? missaoAtiva.nome : '...'}</div>
+                            <style>
+                                @keyframes shake {
+                                    0%, 100% { transform: rotate(0deg); }
+                                    25% { transform: rotate(-8deg); }
+                                    75% { transform: rotate(8deg); }
+                                }
+                            </style>
+                        `;
+                        document.body.appendChild(gifOverlay);
+
+                        setTimeout(() => {
+                            gifOverlay.remove();
+                        }, 1500);
+                    }, 1000);
                 }
 
                 // Tela de vitória (todas as missões completas)
@@ -2658,28 +2647,22 @@
                         document.body.appendChild(popup);
                     }
 
-                    const completed = getCompletedCount();
-                    
                     popup.innerHTML = `
-                        <div id='missao-gif-area' style='display:none;margin-bottom:12px;'></div>
-                        
-                        <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #666;'>
-                            <div style='font-size:18px;font-weight:bold;'>🎯 Missão Ativa</div>
-                            <button id='missoes-popup-close' style='background:#d33;color:#fff;border:none;border-radius:4px;padding:5px 10px;cursor:pointer;font-size:16px;'>✕</button>
-                        </div>
-                        
-                        <div style='background:${BOX_ALT};padding:16px;border-radius:8px;border:2px solid #3498db;margin-bottom:12px;'>
-                            <div style='font-size:16px;font-weight:bold;color:#3498db;margin-bottom:8px;'>📍 ${missaoAtiva.nome}</div>
-                            <div style='font-size:12px;color:#aaa;'>Tipo: ${missaoAtiva.tipo}</div>
-                        </div>
-                        
-                        <div style='margin-bottom:12px;font-size:14px;color:#bbb;'>
-                            Progresso: <b style='color:#2ecc71;'>${completed}/27</b> ✅
-                        </div>
-                        
-                        <div style='display:flex;gap:8px;'>
-                            <button id='missao-pular' style='flex:1;background:#f39c12;color:#fff;border:none;border-radius:6px;padding:10px;cursor:pointer;font-size:14px;font-weight:bold;'>⏩ Pular</button>
-                            <button id='missao-ver-todas' style='flex:1;background:${BTN_BG};color:${BOX_FG};border:1px solid #666;border-radius:6px;padding:10px;cursor:pointer;font-size:14px;'>📋 Ver Todas</button>
+                        <div style='position:relative;'>
+                            <button id='missoes-popup-close' style='position:absolute;top:0;right:0;background:#d33;color:#fff;border:none;border-radius:4px;padding:6px 10px;cursor:pointer;font-size:16px;z-index:10;'>✕</button>
+                            
+                            <div id='missao-gif-area' style='display:none;margin-bottom:12px;'></div>
+                            
+                            <div style='background:${BOX_ALT};padding:18px;border-radius:8px;border:2px solid #3498db;margin-bottom:14px;'>
+                                <div style='font-size:20px;font-weight:bold;color:#3498db;margin-bottom:12px;text-align:center;'>🎯 LOCALIZAR</div>
+                                <div style='font-size:18px;font-weight:bold;color:#fff;margin-bottom:8px;text-align:center;'>${missaoAtiva.nome}</div>
+                                <div style='font-size:13px;color:#aaa;text-align:center;text-transform:capitalize;'>Tipo: ${missaoAtiva.tipo}</div>
+                            </div>
+                            
+                            <div style='display:flex;gap:8px;'>
+                                <button id='missao-pular' style='flex:1;background:#f39c12;color:#fff;border:none;border-radius:6px;padding:10px;cursor:pointer;font-size:14px;font-weight:bold;'>⏩ Pular</button>
+                                <button id='missao-ver-todas' style='flex:1;background:${BTN_BG};color:${BOX_FG};border:1px solid #666;border-radius:6px;padding:10px;cursor:pointer;font-size:14px;'>📋 Ver Todas</button>
+                            </div>
                         </div>
                     `;
 
@@ -2697,7 +2680,9 @@
                         renderMissoesListaCompleta();
                     };
 
-                    // Animação de entrada
+                    // Animação de entrada (sempre reexibe popup, mesmo se estava escondido)
+                    popup.style.display = 'block';
+                    missoesPopupOpen = true;
                     setTimeout(() => {
                         popup.style.transform = 'translateY(0)';
                         popup.style.opacity = '1';
