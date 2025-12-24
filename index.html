@@ -528,6 +528,7 @@
                 // Função para expandir menu
                 function expandMenu() {
                     if (!leftControls) return;
+                    leftControls.style.display = 'flex'; // Força flex (não depende de CSS vazio)
                     const children = Array.from(leftControls.children);
                     children.forEach(ch => {
                         ch.style.display = '';
