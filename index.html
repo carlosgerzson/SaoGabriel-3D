@@ -1292,7 +1292,12 @@
 
                 // --- Preview Laranja (aplicado por padrão a todos os LOWs) ---
                 const PREVIEW_ORANGE = Cesium.Color.fromCssColorString('#b45f00');
-                const baraoExperienceId = '505353915';
+                const pocoExperienceAnchor = {
+                    lon: -54.316974,
+                    lat: -30.340808,
+                    height: 150
+                };
+                const cameraExperienceNearDistanceMeters = 1200;
                 let activeOrbitCleanup = null;
                 let activeExperienceInfoTimer = null;
 
@@ -1330,6 +1335,39 @@
                     };
                 }
 
+                function applyExperienceTargetOffset(targetCartesian, referenceHeading, experienceConfig) {
+                    if (!experienceConfig) return targetCartesian;
+
+                    const lateralOffsetMeters = typeof experienceConfig.targetLateralOffsetMeters === 'number'
+                        ? experienceConfig.targetLateralOffsetMeters
+                        : 0;
+                    const forwardOffsetMeters = typeof experienceConfig.targetForwardOffsetMeters === 'number'
+                        ? experienceConfig.targetForwardOffsetMeters
+                        : 0;
+                    const upOffsetMeters = typeof experienceConfig.targetUpOffsetMeters === 'number'
+                        ? experienceConfig.targetUpOffsetMeters
+                        : 0;
+
+                    if (!lateralOffsetMeters && !forwardOffsetMeters && !upOffsetMeters) {
+                        return targetCartesian;
+                    }
+
+                    const transform = Cesium.Transforms.eastNorthUpToFixedFrame(targetCartesian);
+                    const sinHeading = Math.sin(referenceHeading);
+                    const cosHeading = Math.cos(referenceHeading);
+                    const leftEast = -cosHeading;
+                    const leftNorth = sinHeading;
+                    const forwardEast = sinHeading;
+                    const forwardNorth = cosHeading;
+                    const localOffset = new Cesium.Cartesian3(
+                        (leftEast * lateralOffsetMeters) + (forwardEast * forwardOffsetMeters),
+                        (leftNorth * lateralOffsetMeters) + (forwardNorth * forwardOffsetMeters),
+                        upOffsetMeters
+                    );
+
+                    return Cesium.Matrix4.multiplyByPoint(transform, localOffset, new Cesium.Cartesian3());
+                }
+
                 function startOrbitAroundTarget(targetCartesian, options) {
                     stopActiveOrbit();
                     const orbitDurationMs = options.durationMs || 12000;
@@ -1361,22 +1399,68 @@
                     };
                 }
 
-                function runBaraoCameraExperience() {
-                    const baraoData = buildingsMap[baraoExperienceId];
-                    if (!baraoData) return;
+                function getCartesianSurfaceDistanceMeters(fromCartesian, toCartesian) {
+                    try {
+                        const fromCartographic = Cesium.Cartographic.fromCartesian(fromCartesian);
+                        const toCartographic = Cesium.Cartographic.fromCartesian(toCartesian);
+                        const geodesic = new Cesium.EllipsoidGeodesic(fromCartographic, toCartographic);
+                        return geodesic.surfaceDistance || 0;
+                    } catch (e) {
+                        return 0;
+                    }
+                }
+
+                function shouldUseCesiumExperience(id) {
+                    const data = buildingsMap[id];
+                    return !!(data && data.uri_detail);
+                }
+
+                function runCameraExperienceForGlb(id, onComplete) {
+                    const data = buildingsMap[id];
+                    if (!data) return false;
 
                     stopActiveOrbit();
 
-                    const targetDisplay = getDetailDisplayState(baraoExperienceId);
-                    const targetCartesian = targetDisplay ? targetDisplay.position : baraoData.position;
-                    const pracaCentroExperiencia = Cesium.Cartesian3.fromDegrees(-54.316974, -30.340808, 150);
+                    const targetDisplay = getDetailDisplayState(id);
+                    const experienceConfig = targetDisplay && targetDisplay.experience ? targetDisplay.experience : null;
+                    const pracaCentroExperiencia = Cesium.Cartesian3.fromDegrees(
+                        pocoExperienceAnchor.lon,
+                        pocoExperienceAnchor.lat,
+                        pocoExperienceAnchor.height
+                    );
                     const cameraStartCartesian = pracaCentroExperiencia;
+                    const baseTargetCartesian = targetDisplay ? (targetDisplay.cameraTargetPosition || targetDisplay.position) : data.position;
+                    const initialViewBase = computeHeadingPitchToTarget(cameraStartCartesian, baseTargetCartesian);
+                    const targetCartesian = applyExperienceTargetOffset(
+                        baseTargetCartesian,
+                        initialViewBase.heading,
+                        experienceConfig
+                    );
                     const initialView = computeHeadingPitchToTarget(cameraStartCartesian, targetCartesian);
-                    const orbitPitch = Cesium.Math.toRadians(-18);
-                    const orbitRange = 120;
+                    const targetDistanceMeters = getCartesianSurfaceDistanceMeters(pracaCentroExperiencia, targetCartesian);
+                    const isNearPraca = targetDistanceMeters <= cameraExperienceNearDistanceMeters;
+
+                    const orbitPitch = (experienceConfig && typeof experienceConfig.pitch === 'number')
+                        ? experienceConfig.pitch
+                        : Cesium.Math.toRadians(-18);
+                    const orbitRange = (experienceConfig && typeof experienceConfig.range === 'number')
+                        ? experienceConfig.range
+                        : (isNearPraca ? 120 : Math.max(140, Math.min(280, targetDistanceMeters * 0.18)));
+                    const orbitDurationMs = (experienceConfig && typeof experienceConfig.durationMs === 'number')
+                        ? experienceConfig.durationMs
+                        : (isNearPraca ? 12000 : 8000);
+
+                    const completeSafely = function () {
+                        if (typeof onComplete === 'function') {
+                            activeExperienceInfoTimer = setTimeout(() => {
+                                activeExperienceInfoTimer = null;
+                                onComplete();
+                            }, 250);
+                        }
+                    };
 
                     viewer.camera.setView({
-                        destination: cameraStartCartesian,
+                        destination: isNearPraca ? cameraStartCartesian : viewer.camera.positionWC,
                         orientation: {
                             heading: initialView.heading,
                             pitch: initialView.pitch,
@@ -1398,27 +1482,27 @@
                                     startHeading: initialView.heading,
                                     pitch: orbitPitch,
                                     range: orbitRange,
-                                    durationMs: 12000,
+                                    durationMs: orbitDurationMs,
                                     onComplete: function () {
-                                        const finalView = computeHeadingPitchToTarget(pracaCentroExperiencia, targetCartesian);
-                                        viewer.camera.setView({
-                                            destination: pracaCentroExperiencia,
-                                            orientation: {
-                                                heading: finalView.heading,
-                                                pitch: finalView.pitch,
-                                                roll: 0
-                                            }
-                                        });
-
-                                        activeExperienceInfoTimer = setTimeout(() => {
-                                            activeExperienceInfoTimer = null;
-                                            showInfobox(baraoExperienceId);
-                                        }, 250);
+                                        if (isNearPraca) {
+                                            const finalView = computeHeadingPitchToTarget(pracaCentroExperiencia, targetCartesian);
+                                            viewer.camera.setView({
+                                                destination: pracaCentroExperiencia,
+                                                orientation: {
+                                                    heading: finalView.heading,
+                                                    pitch: finalView.pitch,
+                                                    roll: 0
+                                                }
+                                            });
+                                        }
+                                        completeSafely();
                                     }
                                 });
                             }
                         }
                     );
+
+                    return true;
                 }
 
                 // Camada experimental de exibicao dos detalhes no proprio Cesium.
@@ -1446,6 +1530,15 @@
                             range: 65,
                             duration: 1.4
                         }
+                    },
+                    '262049292': {
+                        cameraTargetOffset: {
+                            height: -28
+                        },
+                        experience: {
+                            range: 150,
+                            targetLateralOffsetMeters: 16
+                        }
                     }
                 };
 
@@ -1470,11 +1563,20 @@
                     const lonOffset = (config && config.pivotCompensation && typeof config.pivotCompensation.lonOffset === 'number') ? config.pivotCompensation.lonOffset : 0;
                     const latOffset = (config && config.pivotCompensation && typeof config.pivotCompensation.latOffset === 'number') ? config.pivotCompensation.latOffset : 0;
                     const heightOffset = (config && config.pivotCompensation && typeof config.pivotCompensation.heightOffset === 'number') ? config.pivotCompensation.heightOffset : 0;
+                    const cameraTargetLonOffset = (config && config.cameraTargetOffset && typeof config.cameraTargetOffset.lon === 'number') ? config.cameraTargetOffset.lon : 0;
+                    const cameraTargetLatOffset = (config && config.cameraTargetOffset && typeof config.cameraTargetOffset.lat === 'number') ? config.cameraTargetOffset.lat : 0;
+                    const cameraTargetHeightOffset = (config && config.cameraTargetOffset && typeof config.cameraTargetOffset.height === 'number') ? config.cameraTargetOffset.height : 0;
 
                     const position = Cesium.Cartesian3.fromDegrees(
                         lon + lonOffset,
                         lat + latOffset,
                         height + heightOffset
+                    );
+
+                    const cameraTargetPosition = Cesium.Cartesian3.fromDegrees(
+                        lon + cameraTargetLonOffset,
+                        lat + cameraTargetLatOffset,
+                        height + cameraTargetHeightOffset
                     );
 
                     const orientation = new Cesium.HeadingPitchRoll(
@@ -1485,8 +1587,10 @@
 
                     return {
                         position,
+                        cameraTargetPosition,
                         orientation,
-                        camera: config && config.camera ? config.camera : null
+                        camera: config && config.camera ? config.camera : null,
+                        experience: config && config.experience ? config.experience : null
                     };
                 }
 
@@ -1615,9 +1719,7 @@
                     }
                 }
                 function addDetailModel(id) {
-                    if (id !== baraoExperienceId) {
-                        stopActiveOrbit();
-                    }
+                    stopActiveOrbit();
                     const data = buildingsMap[id];
                     if (!data || !data.uri_detail) return;
                     const display = getDetailDisplayState(id);
@@ -1651,8 +1753,12 @@
                         // marca como GLB ativo
                         activeGlbs.add(id);
                         updateTilesetShowForOSM(osmVisible);
-                        if (hasSceneDetailConfig(id) && id !== baraoExperienceId) zoomToConfiguredDetail(id);
-                        if (id === baraoExperienceId) runBaraoCameraExperience();
+                        if (shouldUseCesiumExperience(id)) {
+                            runCameraExperienceForGlb(id, function () { showInfobox(id); });
+                        } else {
+                            if (hasSceneDetailConfig(id)) zoomToConfiguredDetail(id);
+                            showInfobox(id);
+                        }
                     } else {
                         const ent = viewer.entities.add({
                             id: id, // detalhe único usa id puro
@@ -1673,8 +1779,12 @@
                         // marca como GLB ativo
                         activeGlbs.add(id);
                         updateTilesetShowForOSM(osmVisible);
-                        if (hasSceneDetailConfig(id) && id !== baraoExperienceId) zoomToConfiguredDetail(id);
-                        if (id === baraoExperienceId) runBaraoCameraExperience();
+                        if (shouldUseCesiumExperience(id)) {
+                            runCameraExperienceForGlb(id, function () { showInfobox(id); });
+                        } else {
+                            if (hasSceneDetailConfig(id)) zoomToConfiguredDetail(id);
+                            showInfobox(id);
+                        }
                     }
                 }
                 function removeDetailModel(id) {
@@ -1806,7 +1916,6 @@
                                 // Verificar missão (encontra índice do ponto turístico)
                                 const idx = tourismPoints.indexOf(p);
                                 console.debug('[TURISMO] Clicou em:', p.name, 'índice:', idx);
-                                verificarMissaoClique('turismo', null, idx);
                                 
                                 // mostra um infobox simples
                                 let old = document.getElementById('tourism-infobox');
@@ -1849,9 +1958,6 @@
                             const data = buildingsMap[idBase];
                             if (data && data.uri_detail) {
                                 addDetailModel(idBase);
-                                if (idBase !== baraoExperienceId) {
-                                    showInfobox(idBase);
-                                }
                             }
                             return;
                         }
@@ -2321,9 +2427,10 @@
                     // Se há múltiplos GLBs (ex: Prefeitura com 4 blocos), NÃO usar model-viewer
                     // Apenas mostra foto JPG normal. GLBs são carregados no mapa via addDetailModel.
                     const isGlbDetail = detailUris.length === 1 && firstDetail && typeof firstDetail === 'string' && firstDetail.toLowerCase().endsWith('.glb');
-                    const useSceneDetailExperience = hasSceneDetailConfig(id);
+                    const useSceneDetailExperience = shouldUseCesiumExperience(id);
+                    const opensModelViewer = isGlbDetail && !useSceneDetailExperience;
 
-                    if (isGlbDetail && !useSceneDetailExperience) {
+                    if (opensModelViewer) {
                         // GLB único: abre modal fullscreen com abas [3D] [Info]
                         showModelViewerModal(id, firstDetail, data.info.title, data.info.description);
                         return; // Não cria infobox antiga
@@ -2364,7 +2471,7 @@
                     // o HTML do carousel (ids como 'carousel-img-glb') não é inserido.
                     // Evita tentar acessar elementos nulos verificando se não estamos no
                     // fluxo do model-viewer e se os elementos existem.
-                    if (!isGlbDetail && data.info.images && data.info.images.length > 1) {
+                    if (!opensModelViewer && data.info.images && data.info.images.length > 1) {
                         let idxImg = 0;
                         const imgEl = document.getElementById('carousel-img-glb');
                         const indicator = document.getElementById('img-indicator-glb');
@@ -2385,9 +2492,7 @@
                     }
                     if (data.uri_base && data.uri_detail) {
                         document.getElementById('back-to-low').onclick = () => {
-                            if (id === baraoExperienceId) {
-                                stopActiveOrbit();
-                            }
+                            stopActiveOrbit();
                             // Remove detalhe(s) e re-adiciona low
                             const current = glbEntities[id];
                             if (Array.isArray(current)) {
@@ -2600,9 +2705,12 @@
                 // Handler duplicado removido para evitar sobrescrita
 
                 // ==================== SISTEMA DE MISSÕES ====================
-                // Array de 30 missões culturais (mix de edifícios, monumentos, lendas, turismo, marechais)
-                const missoesCulturais = [
-                    // Edifícios icônicos (11 missões)
+                const MISSOES_STORAGE_KEY = 'missoesEdificiosProgress';
+                const MISSOES_POOL_KEY = 'missoesEdificiosAtivas';
+                const MISSOES_ATIVAS_TOTAL = 10;
+
+                // Pool base de edifícios disponíveis para sorteio das missões.
+                const missoesEdificiosDisponiveis = [
                     { id: 'prefeitura', tipo: 'edificio', nome: 'Prefeitura Municipal', targetId: '494741651' },
                     { id: 'matriz', tipo: 'edificio', nome: 'Igreja Matriz', targetId: '496683075' },
                     { id: 'provincia', tipo: 'edificio', nome: 'Banco da Província', targetId: '496696965' },
@@ -2613,60 +2721,55 @@
                     { id: 'amarelo', tipo: 'edificio', nome: 'Casarão Amarelo', targetId: '496680298' },
                     { id: 'guarani', tipo: 'edificio', nome: 'Clube Guarani', targetId: '505353915' },
                     { id: 'comercial', tipo: 'edificio', nome: 'Clube Comercial', targetId: '496692933' },
-                    { id: 'museu_feb', tipo: 'edificio', nome: 'Museu Gaúcho da FEB', targetId: '262049292' },
-                    
-                    // Monumentos (3 missões)
-                    { id: 'monumento_feb', tipo: 'monumento', nome: 'Monumento Heróis da FEB', targetId: '111111111' },
-                    { id: 'monumento_sampaio', tipo: 'monumento', nome: 'Monumento Sampaio Marques Luz', targetId: '222222222' },
-                    { id: 'monumento_celestino', tipo: 'monumento', nome: 'Monumento Dr. Celestino', targetId: '333333333' },
-                    
-                    // Lendas (5 missões)
-                    { id: 'lenda_fuzilados', tipo: 'lenda', nome: 'Os Fuzilados', lendaIdx: 0 },
-                    { id: 'lenda_negrinho', tipo: 'lenda', nome: 'Negrinho da Sanga Funda', lendaIdx: 1 },
-                    { id: 'lenda_guapa', tipo: 'lenda', nome: 'Túmulo da Guapa', lendaIdx: 2 },
-                    { id: 'lenda_noivos', tipo: 'lenda', nome: 'Os Noivos', lendaIdx: 3 },
-                    { id: 'lenda_cigana', tipo: 'lenda', nome: 'A Cigana', lendaIdx: 4 },
-                    
-                    // Turismo (8 missões)
-                    { id: 'tour_galo', tipo: 'turismo', nome: 'Igreja do Galo', tourismIdx: 0 },
-                    { id: 'tour_6be', tipo: 'turismo', nome: '6º Batalhão de Engenharia', tourismIdx: 1 },
-                    { id: 'tour_sepe', tipo: 'turismo', nome: 'Sepé Tiaraju', tourismIdx: 2 },
-                    { id: 'tour_arcanjo', tipo: 'turismo', nome: 'Arcanjo São Gabriel', tourismIdx: 3 },
-                    { id: 'tour_prefeitura', tipo: 'turismo', nome: 'Palácio Plácido de Castro', tourismIdx: 4 },
-                    { id: 'tour_matriz', tipo: 'turismo', nome: 'Igreja Matriz', tourismIdx: 5 },
-                    { id: 'tour_feb', tipo: 'turismo', nome: 'Museu Gaúcho da FEB', tourismIdx: 6 },
-                    { id: 'tour_biblioteca', tipo: 'turismo', nome: 'Secretaria de Turismo', tourismIdx: 7 }
-                    
-                    // MISSÕES COMENTADAS - Dependem de navegação manual por carrossel (índice não confiável)
-                    // Futura implementação: detectar abertura do carrossel ao invés de índice específico
-                    
-                    // Marechais (5 missões - COMENTADAS: verificação por índice não funciona com navegação manual)
-                    // { id: 'marechal_joao_propio', tipo: 'marechal', nome: 'Marechal João Propício', marechalIdx: 0 },
-                    // { id: 'marechal_mallet', tipo: 'marechal', nome: 'Marechal Mallet', marechalIdx: 1 },
-                    // { id: 'marechal_fabio', tipo: 'marechal', nome: 'Marechal Fábio Azambuja', marechalIdx: 2 },
-                    // { id: 'marechal_hermes', tipo: 'marechal', nome: 'Marechal Hermes da Fonseca', marechalIdx: 3 },
-                    // { id: 'marechal_mascarenhas', tipo: 'marechal', nome: 'Marechal Mascarenhas de Moraes', marechalIdx: 4 },
-                    
-                    // Prefeitos (3 missões - COMENTADAS: verificação por índice não funciona com navegação manual)
-                    // { id: 'pref_sampaio', tipo: 'prefeito', nome: 'José Sampaio Marques Luz', prefeitoIdx: 12 },
-                    // { id: 'pref_celestino', tipo: 'prefeito', nome: 'Dr. Celestino Cavalheiro', prefeitoIdx: 3 },
-                    // { id: 'pref_baltazar', tipo: 'prefeito', nome: 'Baltazar Teixeira', prefeitoIdx: 19 },
-                    
-                    // Homens Ilustres (6 missões - COMENTADAS: verificação por índice não funciona com navegação manual)
-                    // { id: 'ilu_abbott', tipo: 'ilustre', nome: 'Fernando Abbott', ilustreIdx: 0 },
-                    // { id: 'ilu_alcides', tipo: 'ilustre', nome: 'Alcides Maia', ilustreIdx: 1 },
-                    // { id: 'ilu_leonel', tipo: 'ilustre', nome: 'Pe. Leonel Franca', ilustreIdx: 2 },
-                    // { id: 'ilu_assis', tipo: 'ilustre', nome: 'Joaquim Assis Brasil', ilustreIdx: 3 },
-                    // { id: 'ilu_placido', tipo: 'ilustre', nome: 'José Plácido de Castro', ilustreIdx: 4 },
-                    // { id: 'ilu_heron', tipo: 'ilustre', nome: 'Heron Domingues', ilustreIdx: 5 }
+                    { id: 'museu_feb', tipo: 'edificio', nome: 'Museu Gaúcho da FEB', targetId: '262049292' }
                 ];
+
+                function shuffleArray(items) {
+                    const arr = items.slice();
+                    for (let i = arr.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        const tmp = arr[i];
+                        arr[i] = arr[j];
+                        arr[j] = tmp;
+                    }
+                    return arr;
+                }
+
+                function createRandomMissoesSet() {
+                    return shuffleArray(missoesEdificiosDisponiveis).slice(0, Math.min(MISSOES_ATIVAS_TOTAL, missoesEdificiosDisponiveis.length));
+                }
+
+                function loadOrCreateMissoesAtivas() {
+                    try {
+                        const savedIds = JSON.parse(localStorage.getItem(MISSOES_POOL_KEY) || 'null');
+                        if (Array.isArray(savedIds)) {
+                            const byId = new Map(missoesEdificiosDisponiveis.map((missao) => [missao.id, missao]));
+                            const restored = savedIds.map((id) => byId.get(id)).filter(Boolean);
+                            if (restored.length === Math.min(MISSOES_ATIVAS_TOTAL, missoesEdificiosDisponiveis.length)) {
+                                return restored;
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Erro ao carregar pool de missões de edifícios:', e);
+                    }
+
+                    const novasMissoes = createRandomMissoesSet();
+                    try {
+                        localStorage.setItem(MISSOES_POOL_KEY, JSON.stringify(novasMissoes.map((missao) => missao.id)));
+                    } catch (e) {
+                        console.warn('Erro ao salvar pool de missões de edifícios:', e);
+                    }
+                    return novasMissoes;
+                }
+
+                const missoesCulturais = loadOrCreateMissoesAtivas();
 
                 console.debug('[MISSÕES] Total de missões carregadas:', missoesCulturais.length);
 
                 // LocalStorage: carregar progresso
                 function loadMissoesProgress() {
                     try {
-                        const saved = localStorage.getItem('missoesProgress');
+                        const saved = localStorage.getItem(MISSOES_STORAGE_KEY);
                         if (saved) {
                             const progress = JSON.parse(saved);
                             // Limpar IDs inválidos (missões que não existem mais no array)
@@ -2695,7 +2798,7 @@
                 // LocalStorage: salvar progresso
                 function saveMissoesProgress(progress) {
                     try {
-                        localStorage.setItem('missoesProgress', JSON.stringify(progress));
+                        localStorage.setItem(MISSOES_STORAGE_KEY, JSON.stringify(progress));
                     } catch (e) {
                         console.warn('Erro ao salvar progresso de missões:', e);
                     }
@@ -2706,7 +2809,7 @@
                 let missaoAtiva = null; // Missão atual do jogador
                 let missaoModoAtivo = false; // Se está no modo de missão ativa
 
-                // Obter próxima missão não completa (sequencial)
+                // Obter próxima missão não completa (ordem sorteada no conjunto ativo)
                 function getNextMissao() {
                     for (let missao of missoesCulturais) {
                         if (!missoesProgress[missao.id]) {
@@ -2740,43 +2843,18 @@
                     renderMissaoAtivaPopup();
                 }
 
-                // Verificar se clique corresponde à missão ativa
-                function verificarMissaoClique(tipo, targetId, idx) {
+                // Verificar se o edifício aberto corresponde à missão ativa.
+                function verificarMissaoClique(targetId) {
                     if (!missaoModoAtivo || !missaoAtiva) {
                         console.debug('[MISSÃO] Modo inativo ou sem missão ativa');
                         return;
                     }
 
-                    let acertou = false;
-
-                    // Verifica tipo + ID/índice
-                    if (tipo === 'edificio' || tipo === 'monumento') {
-                        // Aceita se for o targetId correto (independente do tipo declarado)
-                        acertou = (missaoAtiva.targetId === targetId);
-                    } else if (tipo === 'lenda') {
-                        acertou = (missaoAtiva.tipo === 'lenda' && missaoAtiva.lendaIdx === idx);
-                    } else if (tipo === 'turismo') {
-                        acertou = (missaoAtiva.tipo === 'turismo' && missaoAtiva.tourismIdx === idx);
-                        console.debug('[MISSÃO] Turismo check:', {
-                            missaoTipo: missaoAtiva.tipo,
-                            missaoIdx: missaoAtiva.tourismIdx,
-                            cliqueIdx: idx,
-                            match: acertou
-                        });
-                    } else if (tipo === 'marechal') {
-                        acertou = (missaoAtiva.tipo === 'marechal' && missaoAtiva.marechalIdx === idx);
-                    } else if (tipo === 'prefeito') {
-                        acertou = (missaoAtiva.tipo === 'prefeito' && missaoAtiva.prefeitoIdx === idx);
-                    } else if (tipo === 'ilustre') {
-                        acertou = (missaoAtiva.tipo === 'ilustre' && missaoAtiva.ilustreIdx === idx);
-                    }
+                    const acertou = missaoAtiva.targetId === targetId;
 
                     console.debug('[MISSÃO] Verificação:', { 
-                        tipo, 
                         targetId, 
-                        idx, 
                         missaoAtiva: missaoAtiva.nome, 
-                        missaoTipo: missaoAtiva.tipo,
                         acertou 
                     });
 
@@ -2891,7 +2969,7 @@
                         <div style='text-align:center;padding:20px;'>
                             <img src="https://media.giphy.com/media/g9582DNuQppxC/giphy.gif" style="width:100%;height:150px;object-fit:contain;border-radius:8px;margin-bottom:16px;">
                             <div style='font-size:24px;font-weight:bold;color:#2ecc71;margin-bottom:12px;'>🎉 PARABÉNS! 🎉</div>
-                            <div style='font-size:16px;color:#ddd;margin-bottom:20px;'>Você completou todas as 40 missões culturais de São Gabriel!</div>
+                            <div style='font-size:16px;color:#ddd;margin-bottom:20px;'>Você completou todas as ${missoesCulturais.length} missões de edifícios históricos de São Gabriel.</div>
                             <button id='victory-close' style='background:#3498db;color:#fff;border:none;border-radius:6px;padding:12px 24px;cursor:pointer;font-size:16px;font-weight:bold;'>🏆 Fechar</button>
                         </div>
                     `;
@@ -2998,7 +3076,7 @@
                             <button id='missoes-popup-close' style='background:#d33;color:#fff;border:none;border-radius:4px;padding:5px 10px;cursor:pointer;font-size:16px;'>✕</button>
                         </div>
                         <div style='margin-bottom:12px;font-size:14px;color:#bbb;'>
-                            Progresso: <b style='color:#2ecc71;'>${completed}/27</b> completas
+                            Progresso: <b style='color:#2ecc71;'>${completed}/${missoesCulturais.length}</b> completas
                         </div>
                         <div style='max-height:50vh;overflow-y:auto;display:flex;flex-direction:column;gap:6px;'>
                     `;
@@ -3045,10 +3123,14 @@
                             // Atualiza botão flutuante
                             const btn = document.getElementById('missoes-float-btn');
                             if (btn) {
-                                btn.innerHTML = `🎯<br><span style="font-size:11px;">0/27</span>`;
+                                try {
+                                    localStorage.removeItem(MISSOES_POOL_KEY);
+                                } catch (e) {
+                                    console.warn('Erro ao limpar pool de missões:', e);
+                                }
+                                btn.innerHTML = `🎯<br><span style="font-size:11px;">0/${MISSOES_ATIVAS_TOTAL}</span>`;
                             }
-                            renderMissoesListaCompleta();
-                            alert('✅ Progresso resetado com sucesso!');
+                            window.location.reload();
                         }
                     };
                 }
@@ -3087,7 +3169,7 @@
                 missoesFloatBtn.style.justifyContent = 'center';
                 missoesFloatBtn.style.lineHeight = '1';
                 missoesFloatBtn.style.transition = 'transform 0.2s, box-shadow 0.2s';
-                missoesFloatBtn.innerHTML = `🎯<br><span style="font-size:11px;">${getCompletedCount()}/27</span>`;
+                missoesFloatBtn.innerHTML = `🎯<br><span style="font-size:11px;">${getCompletedCount()}/${missoesCulturais.length}</span>`;
                 missoesFloatBtn.onmouseover = () => {
                     missoesFloatBtn.style.transform = 'scale(1.1)';
                     missoesFloatBtn.style.boxShadow = '0 6px 16px rgba(0,0,0,0.5)';
@@ -3119,51 +3201,18 @@
                 };
                 document.body.appendChild(missoesFloatBtn);
 
-                // Hooks para verificação de missões (só ativa se modo missão estiver ativo)
-                // Edifícios/Monumentos: ao abrir infobox/modal
+                // Hooks para verificação de missões dos edifícios.
                 const originalShowInfobox = showInfobox;
                 showInfobox = function(id) {
                     originalShowInfobox(id);
-                    verificarMissaoClique('edificio', id, null);
-                    verificarMissaoClique('monumento', id, null);
+                    verificarMissaoClique(id);
                 };
 
                 const originalShowModelViewerModal = showModelViewerModal;
                 showModelViewerModal = function(id, uri, title, description, images) {
                     originalShowModelViewerModal(id, uri, title, description, images);
-                    verificarMissaoClique('edificio', id, null);
-                    verificarMissaoClique('monumento', id, null);
+                    verificarMissaoClique(id);
                 };
-
-                // Lendas: ao abrir infobox de lenda
-                const originalShowLendaInfobox = showLendaInfobox;
-                showLendaInfobox = function(idx) {
-                    originalShowLendaInfobox(idx);
-                    verificarMissaoClique('lenda', null, idx);
-                };
-
-                // Marechais: ao abrir carrossel
-                const originalShowMarechaisCarousel = showMarechaisCarousel;
-                showMarechaisCarousel = function(startIndex) {
-                    originalShowMarechaisCarousel(startIndex);
-                    verificarMissaoClique('marechal', null, startIndex || 0);
-                };
-
-                // Prefeitos: ao abrir carrossel
-                const originalShowPrefeitosCarousel = showPrefeitosCarousel;
-                showPrefeitosCarousel = function(startIndex) {
-                    originalShowPrefeitosCarousel(startIndex);
-                    verificarMissaoClique('prefeito', null, startIndex || 0);
-                };
-
-                // Homens Ilustres: ao abrir carrossel
-                const originalShowIlustresCarousel = showIlustresCarousel;
-                showIlustresCarousel = function(startIndex) {
-                    originalShowIlustresCarousel(startIndex);
-                    verificarMissaoClique('ilustre', null, startIndex || 0);
-                };
-
-                // Nota: Turismo já tem verificação direta no handler de clique (linha ~1520)
 
                 console.debug('[MISSÕES] Sistema de Missão Ativa inicializado com', missoesCulturais.length, 'missões. Progresso:', getCompletedCount(), '/', missoesCulturais.length);
 
