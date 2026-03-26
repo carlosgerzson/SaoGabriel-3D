@@ -1292,6 +1292,221 @@
 
                 // --- Preview Laranja (aplicado por padrão a todos os LOWs) ---
                 const PREVIEW_ORANGE = Cesium.Color.fromCssColorString('#b45f00');
+                const baraoExperienceId = '505353915';
+                let activeOrbitCleanup = null;
+                let activeExperienceInfoTimer = null;
+
+                function stopActiveOrbit() {
+                    if (activeExperienceInfoTimer) {
+                        clearTimeout(activeExperienceInfoTimer);
+                        activeExperienceInfoTimer = null;
+                    }
+                    if (typeof activeOrbitCleanup === 'function') {
+                        try {
+                            activeOrbitCleanup();
+                        } catch (e) {
+                            console.warn('[CAMERA] Falha ao encerrar orbita ativa.', e);
+                        }
+                    }
+                    activeOrbitCleanup = null;
+                    try {
+                        viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+                    } catch (e) { }
+                }
+
+                function computeHeadingPitchToTarget(fromCartesian, targetCartesian) {
+                    const transform = Cesium.Transforms.eastNorthUpToFixedFrame(fromCartesian);
+                    const inverse = Cesium.Matrix4.inverseTransformation(transform, new Cesium.Matrix4());
+                    const localTarget = Cesium.Matrix4.multiplyByPoint(inverse, targetCartesian, new Cesium.Cartesian3());
+                    const horizontalDistance = Math.max(0.001, Math.hypot(localTarget.x, localTarget.y));
+                    return {
+                        heading: Math.atan2(localTarget.x, localTarget.y),
+                        pitch: Math.atan2(localTarget.z, horizontalDistance),
+                        range: Math.sqrt(
+                            (localTarget.x * localTarget.x) +
+                            (localTarget.y * localTarget.y) +
+                            (localTarget.z * localTarget.z)
+                        )
+                    };
+                }
+
+                function startOrbitAroundTarget(targetCartesian, options) {
+                    stopActiveOrbit();
+                    const orbitDurationMs = options.durationMs || 12000;
+                    const orbitPitch = options.pitch;
+                    const orbitRange = options.range;
+                    const startHeading = options.startHeading;
+                    const onComplete = options.onComplete;
+                    const startTime = performance.now();
+
+                    const onTick = function () {
+                        const elapsed = performance.now() - startTime;
+                        const progress = Math.min(elapsed / orbitDurationMs, 1);
+                        const heading = startHeading + (Cesium.Math.TWO_PI * progress);
+                        viewer.camera.lookAt(
+                            targetCartesian,
+                            new Cesium.HeadingPitchRange(heading, orbitPitch, orbitRange)
+                        );
+                        if (progress >= 1) {
+                            stopActiveOrbit();
+                            if (typeof onComplete === 'function') {
+                                onComplete();
+                            }
+                        }
+                    };
+
+                    viewer.scene.preRender.addEventListener(onTick);
+                    activeOrbitCleanup = function () {
+                        viewer.scene.preRender.removeEventListener(onTick);
+                    };
+                }
+
+                function runBaraoCameraExperience() {
+                    const baraoData = buildingsMap[baraoExperienceId];
+                    if (!baraoData) return;
+
+                    stopActiveOrbit();
+
+                    const targetDisplay = getDetailDisplayState(baraoExperienceId);
+                    const targetCartesian = targetDisplay ? targetDisplay.position : baraoData.position;
+                    const pracaCentroExperiencia = Cesium.Cartesian3.fromDegrees(-54.316974, -30.340808, 150);
+                    const cameraStartCartesian = pracaCentroExperiencia;
+                    const initialView = computeHeadingPitchToTarget(cameraStartCartesian, targetCartesian);
+                    const orbitPitch = Cesium.Math.toRadians(-18);
+                    const orbitRange = 120;
+
+                    viewer.camera.setView({
+                        destination: cameraStartCartesian,
+                        orientation: {
+                            heading: initialView.heading,
+                            pitch: initialView.pitch,
+                            roll: 0
+                        }
+                    });
+
+                    viewer.camera.flyToBoundingSphere(
+                        new Cesium.BoundingSphere(targetCartesian, 46),
+                        {
+                            duration: 2.2,
+                            offset: new Cesium.HeadingPitchRange(
+                                initialView.heading,
+                                orbitPitch,
+                                orbitRange
+                            ),
+                            complete: function () {
+                                startOrbitAroundTarget(targetCartesian, {
+                                    startHeading: initialView.heading,
+                                    pitch: orbitPitch,
+                                    range: orbitRange,
+                                    durationMs: 12000,
+                                    onComplete: function () {
+                                        const finalView = computeHeadingPitchToTarget(pracaCentroExperiencia, targetCartesian);
+                                        viewer.camera.setView({
+                                            destination: pracaCentroExperiencia,
+                                            orientation: {
+                                                heading: finalView.heading,
+                                                pitch: finalView.pitch,
+                                                roll: 0
+                                            }
+                                        });
+
+                                        activeExperienceInfoTimer = setTimeout(() => {
+                                            activeExperienceInfoTimer = null;
+                                            showInfobox(baraoExperienceId);
+                                        }, 250);
+                                    }
+                                });
+                            }
+                        }
+                    );
+                }
+
+                // Camada experimental de exibicao dos detalhes no proprio Cesium.
+                // Por enquanto, aplicamos apenas ao Barao para validar o fluxo novo.
+                const detailDisplayConfig = {
+                    '505354016': {
+                        placement: {
+                            lon: -54.316222,
+                            lat: -30.3411985,
+                            height: 136
+                        },
+                        orientation: {
+                            heading: Cesium.Math.toRadians(-156),
+                            pitch: Cesium.Math.toRadians(0),
+                            roll: Cesium.Math.toRadians(0)
+                        },
+                        pivotCompensation: {
+                            lonOffset: 0,
+                            latOffset: 0,
+                            heightOffset: 0
+                        },
+                        camera: {
+                            heading: Cesium.Math.toRadians(-156),
+                            pitch: Cesium.Math.toRadians(-0.38),
+                            range: 65,
+                            duration: 1.4
+                        }
+                    }
+                };
+
+                function hasSceneDetailConfig(id) {
+                    return !!detailDisplayConfig[id];
+                }
+
+                function getDetailDisplayState(id) {
+                    const data = buildingsMap[id];
+                    if (!data) return null;
+
+                    const config = detailDisplayConfig[id];
+                    const baseCartographic = Cesium.Cartographic.fromCartesian(data.position);
+                    const baseLon = Cesium.Math.toDegrees(baseCartographic.longitude);
+                    const baseLat = Cesium.Math.toDegrees(baseCartographic.latitude);
+                    const baseHeight = baseCartographic.height;
+
+                    const lon = (config && config.placement && typeof config.placement.lon === 'number') ? config.placement.lon : baseLon;
+                    const lat = (config && config.placement && typeof config.placement.lat === 'number') ? config.placement.lat : baseLat;
+                    const height = (config && config.placement && typeof config.placement.height === 'number') ? config.placement.height : baseHeight;
+
+                    const lonOffset = (config && config.pivotCompensation && typeof config.pivotCompensation.lonOffset === 'number') ? config.pivotCompensation.lonOffset : 0;
+                    const latOffset = (config && config.pivotCompensation && typeof config.pivotCompensation.latOffset === 'number') ? config.pivotCompensation.latOffset : 0;
+                    const heightOffset = (config && config.pivotCompensation && typeof config.pivotCompensation.heightOffset === 'number') ? config.pivotCompensation.heightOffset : 0;
+
+                    const position = Cesium.Cartesian3.fromDegrees(
+                        lon + lonOffset,
+                        lat + latOffset,
+                        height + heightOffset
+                    );
+
+                    const orientation = new Cesium.HeadingPitchRoll(
+                        (config && config.orientation && typeof config.orientation.heading === 'number') ? config.orientation.heading : data.orientation.heading,
+                        (config && config.orientation && typeof config.orientation.pitch === 'number') ? config.orientation.pitch : data.orientation.pitch,
+                        (config && config.orientation && typeof config.orientation.roll === 'number') ? config.orientation.roll : data.orientation.roll
+                    );
+
+                    return {
+                        position,
+                        orientation,
+                        camera: config && config.camera ? config.camera : null
+                    };
+                }
+
+                function zoomToConfiguredDetail(id) {
+                    const display = getDetailDisplayState(id);
+                    if (!display || !display.camera) return;
+
+                    const range = display.camera.range || 65;
+                    viewer.camera.flyToBoundingSphere(
+                        new Cesium.BoundingSphere(display.position, Math.max(20, range * 0.45)),
+                        {
+                            duration: display.camera.duration || 1.4,
+                            offset: new Cesium.HeadingPitchRange(
+                                display.camera.heading,
+                                display.camera.pitch,
+                                range
+                            )
+                        }
+                    );
+                }
 
                 function setEntityTintSingle(ent, apply) {
                     try {
@@ -1400,8 +1615,14 @@
                     }
                 }
                 function addDetailModel(id) {
+                    if (id !== baraoExperienceId) {
+                        stopActiveOrbit();
+                    }
                     const data = buildingsMap[id];
                     if (!data || !data.uri_detail) return;
+                    const display = getDetailDisplayState(id);
+                    const modelPosition = display ? display.position : data.position;
+                    const modelOrientation = display ? display.orientation : data.orientation;
                     // Remove low anterior
                     const low = viewer.entities.getById(id + '_low');
                     if (low) viewer.entities.remove(low);
@@ -1411,10 +1632,10 @@
                         data.uri_detail.forEach((uri, idx) => {
                             const ent = viewer.entities.add({
                                 id: id + '_detail_' + idx,
-                                position: data.position,
+                                position: modelPosition,
                                 orientation: Cesium.Transforms.headingPitchRollQuaternion(
-                                    data.position,
-                                    data.orientation
+                                    modelPosition,
+                                    modelOrientation
                                 ),
                                 model: {
                                     uri: uri,
@@ -1430,13 +1651,15 @@
                         // marca como GLB ativo
                         activeGlbs.add(id);
                         updateTilesetShowForOSM(osmVisible);
+                        if (hasSceneDetailConfig(id) && id !== baraoExperienceId) zoomToConfiguredDetail(id);
+                        if (id === baraoExperienceId) runBaraoCameraExperience();
                     } else {
                         const ent = viewer.entities.add({
                             id: id, // detalhe único usa id puro
-                            position: data.position,
+                            position: modelPosition,
                             orientation: Cesium.Transforms.headingPitchRollQuaternion(
-                                data.position,
-                                data.orientation
+                                modelPosition,
+                                modelOrientation
                             ),
                             model: {
                                 uri: data.uri_detail,
@@ -1450,6 +1673,8 @@
                         // marca como GLB ativo
                         activeGlbs.add(id);
                         updateTilesetShowForOSM(osmVisible);
+                        if (hasSceneDetailConfig(id) && id !== baraoExperienceId) zoomToConfiguredDetail(id);
+                        if (id === baraoExperienceId) runBaraoCameraExperience();
                     }
                 }
                 function removeDetailModel(id) {
@@ -1624,7 +1849,9 @@
                             const data = buildingsMap[idBase];
                             if (data && data.uri_detail) {
                                 addDetailModel(idBase);
-                                showInfobox(idBase);
+                                if (idBase !== baraoExperienceId) {
+                                    showInfobox(idBase);
+                                }
                             }
                             return;
                         }
@@ -2094,8 +2321,9 @@
                     // Se há múltiplos GLBs (ex: Prefeitura com 4 blocos), NÃO usar model-viewer
                     // Apenas mostra foto JPG normal. GLBs são carregados no mapa via addDetailModel.
                     const isGlbDetail = detailUris.length === 1 && firstDetail && typeof firstDetail === 'string' && firstDetail.toLowerCase().endsWith('.glb');
+                    const useSceneDetailExperience = hasSceneDetailConfig(id);
 
-                    if (isGlbDetail) {
+                    if (isGlbDetail && !useSceneDetailExperience) {
                         // GLB único: abre modal fullscreen com abas [3D] [Info]
                         showModelViewerModal(id, firstDetail, data.info.title, data.info.description);
                         return; // Não cria infobox antiga
@@ -2157,6 +2385,9 @@
                     }
                     if (data.uri_base && data.uri_detail) {
                         document.getElementById('back-to-low').onclick = () => {
+                            if (id === baraoExperienceId) {
+                                stopActiveOrbit();
+                            }
                             // Remove detalhe(s) e re-adiciona low
                             const current = glbEntities[id];
                             if (Array.isArray(current)) {
